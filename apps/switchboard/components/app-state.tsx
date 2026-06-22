@@ -12,12 +12,13 @@ type AppContextValue = {
   publishApplication: (id: string) => void;
   redeployApplication: (id: string) => void;
   disableApplication: (id: string) => void;
+  resetDemoData: () => void;
   recordAudit: (action: string, target: string, type?: string) => void;
   simulateAction: (action: string, target: string, type?: string) => void;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
-const storageKey = "switchboard-ai-state";
+const storageKey = "switchboard-ai-state-v2";
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [applications, setApplications] = useState(seedApplications);
@@ -71,7 +72,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       purpose: input.purpose,
       slug: input.slug,
       url: `https://chat.${input.slug}.acme.ai`,
-      status: "Deploying",
+      status: "Draft",
       targetServerId: input.targetServerId,
       chatEngine: "AnythingLLM",
       allowedModels: input.allowedModels,
@@ -83,14 +84,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       spendBudgetAed: input.spendBudgetAed,
       spendUsedAed: 0,
       externalModelRule: input.externalModelRule,
-      lastDeployed: "Deployment pending",
+      lastDeployed: "Draft",
       activeUsers: 0,
       monthlyRequests: 0,
       avgLatencyMs: 0
     };
     setApplications((current) => [application, ...current]);
-    recordAudit("Created AI Application deployment request", application.name, "Application");
-    showToast(`${application.name} deployment request created.`);
+    recordAudit("Created AI Workspace draft", application.name, "Workspace");
+    showToast(`${application.name} draft created.`);
     return application;
   }
 
@@ -102,7 +103,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }
 
   function publishApplication(id: string) {
-    updateApplication(id, { status: "Deploying", lastDeployed: "Deployment pending" }, "Publish application");
+    updateApplication(id, { status: "Live", lastDeployed: "Just now" }, "Published AI Workspace");
   }
 
   function redeployApplication(id: string) {
@@ -110,10 +111,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }
 
   function disableApplication(id: string) {
-    updateApplication(id, { status: "Disabled" }, "Disable application");
+    updateApplication(id, { status: "Disabled" }, "Disabled AI Workspace");
   }
 
-  const value = useMemo(() => ({ applications, auditEvents, toast, createApplication, publishApplication, redeployApplication, disableApplication, recordAudit, simulateAction }), [applications, auditEvents, toast]);
+  function resetDemoData() {
+    window.localStorage.removeItem(storageKey);
+    setApplications(seedApplications);
+    setAuditEvents(seedAudit);
+    showToast("Demo data reset.");
+  }
+
+  const value = useMemo(() => ({ applications, auditEvents, toast, createApplication, publishApplication, redeployApplication, disableApplication, resetDemoData, recordAudit, simulateAction }), [applications, auditEvents, toast]);
 
   return (
     <AppContext.Provider value={value}>

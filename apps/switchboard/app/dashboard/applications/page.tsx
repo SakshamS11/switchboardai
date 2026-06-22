@@ -49,30 +49,30 @@ export default function ApplicationsPage() {
       spendBudgetAed,
       externalModelRule
     });
-    setLastCreated(`${app.name} will deploy AnythingLLM at ${app.url.replace("https://", "")}. Status: Deployment pending.`);
+    setLastCreated(`${app.name} draft created. Publish when configuration, access and routing are ready.`);
     setCreateOpen(false);
   }
 
   return (
     <div className="page">
-      <PageHeader eyebrow="Build" title="AI Applications" description="Create governed employee AI experiences. Publishing deploys a dedicated AnythingLLM instance at the application subdomain." action={<button className="button" type="button" onClick={() => setCreateOpen(true)}>Create application</button>} />
+      <PageHeader eyebrow="AI Management" title="AI Workspaces" description="Create governed employee AI workspaces with model, knowledge, agent, budget and routing controls." action={<button className="button" type="button" onClick={() => setCreateOpen(true)}>Create workspace</button>} />
       <div className="grid kpis">
-        <Card pad><span className="metric-label">Applications</span><div className="metric-value">{applications.length}</div><p className="muted">Configured employee AI experiences</p></Card>
+        <Card pad><span className="metric-label">Workspaces</span><div className="metric-value">{applications.length}</div><p className="muted">Configured employee AI experiences</p></Card>
         <Card pad><span className="metric-label">Live URLs</span><div className="metric-value">{applications.filter((app) => app.status === "Live").length}</div><p className="muted">Active AnythingLLM subdomains</p></Card>
-        <Card pad><span className="metric-label">Local-only apps</span><div className="metric-value">{applications.filter((app) => app.externalModelRule === "Blocked").length}</div><p className="muted">No external model route</p></Card>
-        <Card pad><span className="metric-label">Total app spend</span><div className="metric-value">{aed(applications.reduce((sum, app) => sum + app.spendUsedAed, 0))}</div><p className="muted">Current period usage metadata</p></Card>
+        <Card pad><span className="metric-label">Local-only workspaces</span><div className="metric-value">{applications.filter((app) => app.externalModelRule === "Blocked").length}</div><p className="muted">No external model route</p></Card>
+        <Card pad><span className="metric-label">Workspace spend</span><div className="metric-value">{aed(applications.reduce((sum, app) => sum + app.spendUsedAed, 0))}</div><p className="muted">Current period usage metadata</p></Card>
       </div>
       <Card style={{ marginTop: 18 }}>
-        <div className="card-header"><div><h3>Application registry</h3><p className="muted">The subdomain URL is the employee launch link.</p></div></div>
-        <div className="table-wrap"><table><thead><tr><th>Application</th><th>Team</th><th>Chat URL</th><th>Status</th><th>Models</th><th>Budget</th><th>Action</th></tr></thead><tbody>{applications.map((app) => <tr key={app.id}><td><strong>{app.name}</strong><br /><span className="muted">{app.chatEngine} - {app.purpose}</span></td><td>{app.team}</td><td>{app.status === "Live" ? <a className="muted" href={app.url} target="_blank" rel="noreferrer">{app.url.replace("https://", "")}</a> : <span className="muted">{app.url.replace("https://", "")} pending</span>}</td><td><StatusBadge value={app.status} /></td><td>{app.allowedModels.length}</td><td><Progress value={percent(app.tokensUsed, app.tokenBudget)} /></td><td><Link className="button secondary" href={`/dashboard/applications/${app.id}`}>Manage</Link></td></tr>)}</tbody></table></div>
+        <div className="card-header"><div><h3>Workspace registry</h3><p className="muted">The subdomain URL is the employee launch link after publication.</p></div></div>
+        <div className="table-wrap"><table><thead><tr><th>Workspace</th><th>Team</th><th>Chat URL</th><th>Status</th><th>Models</th><th>Budget</th><th>Action</th></tr></thead><tbody>{applications.map((app) => <tr key={app.id}><td><strong>{app.name}</strong><br /><span className="muted">{app.chatEngine} - {app.purpose}</span></td><td>{app.team}</td><td>{app.status === "Live" ? <a className="muted" href={app.url} target="_blank" rel="noreferrer">{app.url.replace("https://", "")}</a> : <span className="muted">{app.url.replace("https://", "")} not live</span>}</td><td><StatusBadge value={app.status} /></td><td>{app.allowedModels.length}</td><td><Progress value={percent(app.tokensUsed, app.tokenBudget)} /></td><td><Link className="button secondary" href={`/dashboard/applications/${app.id}`}>Manage</Link></td></tr>)}</tbody></table></div>
       </Card>
-      {lastCreated ? <Card pad style={{ marginTop: 18 }}><div className="row"><div><h3>Deployment request created</h3><p className="muted">{lastCreated}</p></div><ButtonLink href="/dashboard/operations" secondary>View operation queue</ButtonLink></div></Card> : null}
+      {lastCreated ? <Card pad style={{ marginTop: 18 }}><div className="row"><div><h3>Workspace draft ready</h3><p className="muted">{lastCreated}</p></div><ButtonLink href="/dashboard/operations" secondary>View monitoring</ButtonLink></div></Card> : null}
       {createOpen ? (
         <div className="modal-backdrop" role="presentation">
           <section className="modal" role="dialog" aria-modal="true" aria-labelledby="create-application-title">
             <div className="modal-header">
               <div>
-                <p className="eyebrow">New AI Application</p>
+                <p className="eyebrow">New AI Workspace</p>
                 <h3 id="create-application-title">Configure governed employee chat</h3>
                 <p className="muted">Switchboard AI configures policy. AnythingLLM provides the employee chat interface.</p>
               </div>
@@ -80,7 +80,7 @@ export default function ApplicationsPage() {
             </div>
             <div className="modal-body">
               <div className="form-grid">
-                <label className="field-group"><span className="metric-label">Application name</span><input className="field" value={name} onChange={(event) => setName(event.target.value)} /></label>
+                <label className="field-group"><span className="metric-label">Workspace name</span><input className="field" value={name} onChange={(event) => setName(event.target.value)} /></label>
                 <label className="field-group"><span className="metric-label">Team</span><select className="field" value={team} onChange={(event) => setTeam(event.target.value)}>{teams.map((item) => <option key={item.id}>{item.name}</option>)}<option>Finance</option><option>Marketing</option></select></label>
                 <label className="field-group wide"><span className="metric-label">Purpose</span><input className="field" value={purpose} onChange={(event) => setPurpose(event.target.value)} /></label>
                 <label className="field-group"><span className="metric-label">Subdomain</span><input className="field" value={subdomain} onChange={(event) => setSubdomain(slugify(event.target.value))} /></label>
@@ -95,11 +95,11 @@ export default function ApplicationsPage() {
               <Picker title="Allowed models" items={activeModels.map((model) => model.name)} values={selectedModels} onToggle={(item) => toggleValue(item, selectedModels, setSelectedModels)} />
               <Picker title="Knowledge bases" items={knowledgeBases.map((kb) => kb.name)} values={selectedKnowledge} onToggle={(item) => toggleValue(item, selectedKnowledge, setSelectedKnowledge)} />
               <Picker title="Governed agents" items={agents.map((agent) => agent.name)} values={selectedAgents} onToggle={(item) => toggleValue(item, selectedAgents, setSelectedAgents)} />
-              <div className="callout">Saving creates a deployment request for a dedicated AnythingLLM instance at the employee subdomain.</div>
+              <div className="callout">Saving creates a Draft. Publish the workspace when the team, model, knowledge and routing boundaries are correct.</div>
             </div>
             <div className="modal-footer">
               <button className="button secondary" type="button" onClick={() => setCreateOpen(false)}>Cancel</button>
-              <button className="button" type="button" onClick={handleCreateApplication}>Save and request deployment</button>
+              <button className="button" type="button" onClick={handleCreateApplication}>Create Draft workspace</button>
             </div>
           </section>
         </div>

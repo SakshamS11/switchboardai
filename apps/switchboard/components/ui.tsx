@@ -7,6 +7,7 @@ export function StatusBadge({ value }: { value: string }) {
 }
 
 export function PageHeader({ eyebrow, title, description, action }: { eyebrow: string; title: string; description: string; action?: ReactNode }) {
+  const documentationHref = `/dashboard/documentation?topic=${encodeURIComponent(title)}`;
   return (
     <div className="page-header">
       <div>
@@ -14,7 +15,10 @@ export function PageHeader({ eyebrow, title, description, action }: { eyebrow: s
         <h2>{title}</h2>
         <p className="muted">{description}</p>
       </div>
-      {action}
+      <div className="page-actions">
+        <Link className="button secondary" href={documentationHref}>View Documentation</Link>
+        {action}
+      </div>
     </div>
   );
 }

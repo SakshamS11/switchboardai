@@ -58,11 +58,11 @@ export const teams: Team[] = [
 ];
 
 export const auditEvents: AuditEvent[] = [
-  { id: "audit-1", time: "12:08", actor: "demo-admin", type: "Application", action: "Published AnythingLLM application", target: "Support Desk AI", status: "Success" },
+  { id: "audit-1", time: "12:08", actor: "workspace-admin", type: "Workspace", action: "Published AI Workspace", target: "Support Desk AI", status: "Success" },
   { id: "audit-2", time: "11:54", actor: "agent:claims-node", type: "Command", action: "Reported GPU pressure", target: "Claims On-Prem Node", status: "Pending" },
   { id: "audit-3", time: "11:40", actor: "governance-lead", type: "Policy", action: "Updated Sovereignty Router", target: "Legal AI Assistant", status: "Success" },
   { id: "audit-4", time: "11:22", actor: "system", type: "Provider", action: "Detected OpenAI latency drift", target: "GPT-4o", status: "Pending" },
-  { id: "audit-5", time: "10:51", actor: "demo-admin", type: "Evidence", action: "Exported readiness evidence", target: "ISO/IEC 42001 pack", status: "Success" }
+  { id: "audit-5", time: "10:51", actor: "governance-lead", type: "Evidence", action: "Exported readiness evidence", target: "ISO/IEC 42001 pack", status: "Success" }
 ];
 
 export const operations = [

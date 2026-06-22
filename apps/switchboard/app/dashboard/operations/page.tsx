@@ -52,27 +52,34 @@ const incidents = [
 
 export default function OperationsPage() {
   const { simulateAction } = useAppState();
+  const [alerts, setAlerts] = useState(incidents);
   const [selectedId, setSelectedId] = useState(incidents[0].id);
-  const selected = incidents.find((incident) => incident.id === selectedId) ?? incidents[0];
+  const selected = alerts.find((incident) => incident.id === selectedId) ?? alerts[0];
+
+  function updateAlert(status: string) {
+    setAlerts((current) => current.map((alert) => alert.id === selected.id ? { ...alert, status } : alert));
+    simulateAction(`${status} alert`, selected.title, "Monitoring");
+  }
 
   return (
     <div className="page">
-      <PageHeader eyebrow="Command Center" title="Incidents" description="Track active AI operations incidents, affected systems, mitigations, and response history." />
+      <PageHeader eyebrow="Command Center" title="Monitoring" description="Operational signals, alerts, provider health, service health and response actions." />
       <div className="grid kpis">
-        <MetricCard label="Open incidents" value={String(incidents.length)} detail="Active response queue" status="Warning" />
+        <MetricCard label="Open alerts" value={String(alerts.filter((alert) => alert.status === "Open").length)} detail="Active response queue" status="Warning" />
         <MetricCard label="Critical incidents" value="1" detail="Legal Sandbox offline" status="Critical" />
         <MetricCard label="Mitigations ready" value={String(operations.length)} detail="Operator actions available" status="Healthy" />
         <MetricCard label="SLA risk" value={selected.due} detail="Nearest due response" status="Warning" />
       </div>
+      <div className="tabs" style={{ marginTop: 18 }}><button className="tab active">24h</button><button className="tab">7d</button><button className="tab">30d</button><select className="field"><option>All servers</option><option>Claims On-Prem Node</option><option>Legal Sandbox</option></select><select className="field"><option>All providers</option><option>OpenAI</option><option>Local vLLM</option></select><select className="field"><option>All severities</option><option>Critical</option><option>Warning</option></select></div>
 
       <div className="control-panel" style={{ marginTop: 18 }}>
         <Card>
           <div className="card-header"><div><h3>Incident queue</h3><p className="muted">Select an incident to review evidence and take action.</p></div></div>
           <div className="selector-list" style={{ padding: 16 }}>
-            {incidents.map((incident) => (
+            {alerts.map((incident) => (
               <button key={incident.id} type="button" className={`selector-item ${incident.id === selectedId ? "active" : ""}`} onClick={() => setSelectedId(incident.id)}>
                 <span className="row"><strong>{incident.title}</strong><StatusBadge value={incident.severity} /></span>
-                <small>{incident.category} - {incident.affected}</small>
+                <small>{incident.category} - {incident.affected} - {incident.status}</small>
               </button>
             ))}
           </div>
@@ -89,8 +96,9 @@ export default function OperationsPage() {
             <h3>Recommended mitigation</h3>
             <p className="muted">{selected.nextStep}</p>
             <div className="row" style={{ justifyContent: "flex-start", marginTop: 12 }}>
-              <button className="button" type="button" onClick={() => simulateAction(selected.action, selected.title, "Incident")}>{selected.action}</button>
-              <button className="button secondary" type="button" onClick={() => simulateAction("Opened incident evidence", selected.title, "Incident")}>View evidence</button>
+              <button className="button" type="button" onClick={() => simulateAction(selected.action, selected.title, "Monitoring")}>{selected.action}</button>
+              <button className="button secondary" type="button" onClick={() => updateAlert("Acknowledged")}>Acknowledge</button>
+              <button className="button secondary" type="button" onClick={() => updateAlert("Resolved")}>Resolve</button>
             </div>
           </Card>
           <Card pad style={{ marginTop: 14 }}>
@@ -102,6 +110,11 @@ export default function OperationsPage() {
             </div>
           </Card>
         </Card>
+      </div>
+      <div className="grid three" style={{ marginTop: 18 }}>
+        <Card pad><h3>GPU utilisation</h3><div className="mini-bars"><div className="mini-bar"><span>Claims</span><span className="progress warning"><span style={{ width: "92%" }} /></span><span>92%</span></div><div className="mini-bar"><span>Acme Azure</span><span className="progress"><span style={{ width: "71%" }} /></span><span>71%</span></div></div></Card>
+        <Card pad><h3>Provider health</h3><div className="control-list"><div className="control-row"><div><strong>OpenAI</strong><small>Latency elevated</small></div><StatusBadge value="Warning" /></div><div className="control-row"><div><strong>Local vLLM</strong><small>Serving normally</small></div><StatusBadge value="Healthy" /></div></div></Card>
+        <Card pad><h3>Service health</h3><div className="control-list"><div className="control-row"><div><strong>Claims RAG Stack</strong><small>All services running</small></div><StatusBadge value="Healthy" /></div><div className="control-row"><div><strong>Legal Sandbox</strong><small>Agent disconnected</small></div><StatusBadge value="Offline" /></div></div></Card>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { Card, MetricCard, PageHeader, StatusBadge } from "@/components/ui";
 import { organization } from "@/lib/mock-data";
 
 export default function SettingsPage() {
-  const { simulateAction } = useAppState();
+  const { simulateAction, resetDemoData } = useAppState();
   const [orgName, setOrgName] = useState(organization.name);
   const [domain, setDomain] = useState(organization.domain);
   const [region, setRegion] = useState(organization.region);
@@ -57,14 +57,16 @@ export default function SettingsPage() {
           <label className="field-group"><span className="metric-label">Alert channels</span><select className="field" value={notifications} onChange={(event) => setNotifications(event.target.value)}><option>Slack and email</option><option>Email only</option><option>Slack only</option><option>Webhook only</option></select></label>
           <p className="muted">Critical incidents, provider degradation, and approval requests use these channels.</p>
           <StatusBadge value="Connected" />
+          <button className="button secondary" type="button" style={{ marginTop: 12 }} onClick={() => simulateAction("Tested notification integration", notifications, "Settings")}>Test Integration</button>
         </Card>
         <Card pad>
-          <h3>Governance defaults</h3>
+          <h3>Governance and retention</h3>
           <p className="muted">Evidence readiness supports ISO/IEC 42001 preparation. It does not mean certification.</p>
           <div className="control-list">
             <div className="control-row"><div><strong>Human approval for external actions</strong><small>Default for governed agents</small></div><StatusBadge value="Active" /></div>
             <div className="control-row"><div><strong>Restricted data fails closed</strong><small>No external fallback for restricted knowledge</small></div><StatusBadge value="Active" /></div>
           </div>
+          <button className="button secondary" type="button" style={{ marginTop: 14 }} onClick={resetDemoData}>Reset Demo Data</button>
         </Card>
       </div>
     </div>
