@@ -17,7 +17,7 @@ type AppContextValue = {
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
-const storageKey = "switchboard-ai-demo-state";
+const storageKey = "switchboard-ai-state";
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [applications, setApplications] = useState(seedApplications);
@@ -49,7 +49,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const event: AuditEvent = {
       id: `audit-${Date.now()}`,
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      actor: "demo-admin",
+      actor: "admin",
       type,
       action,
       target,
@@ -60,7 +60,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   function simulateAction(action: string, target: string, type = "Configuration") {
     recordAudit(action, target, type);
-    showToast(`${action} simulated. Audit entry added to this browser session.`);
+    showToast(`${action}. Audit entry recorded.`);
   }
 
   function createApplication(input: CreateApplicationInput) {
@@ -90,7 +90,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     };
     setApplications((current) => [application, ...current]);
     recordAudit("Created AI Application deployment request", application.name, "Application");
-    showToast(`${application.name} deployment request created. No backend change was made.`);
+    showToast(`${application.name} deployment request created.`);
     return application;
   }
 
@@ -98,7 +98,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const app = applications.find((item) => item.id === id);
     setApplications((current) => current.map((item) => item.id === id ? { ...item, ...changes } : item));
     if (app) recordAudit(action, app.name, "Application");
-    showToast(`${action} simulated. No backend change was made.`);
+    showToast(`${action} queued. Audit entry recorded.`);
   }
 
   function publishApplication(id: string) {

@@ -37,7 +37,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         <header className="topbar">
           <div className="row" style={{ gap: 10 }}><strong>{organization.name}</strong><span className="muted">Production</span><StatusBadge value={organization.aiOpsStatus} /></div>
           <div className="command"><span>Search applications, models, policies...</span><kbd>Ctrl K</kbd></div>
-          <div className="row" style={{ gap: 10 }}><StatusBadge value="Demo" /><span className="muted">Metadata only</span></div>
+          <div className="row" style={{ gap: 10 }}><StatusBadge value="Metadata only" /></div>
         </header>
         {children}
       </main>

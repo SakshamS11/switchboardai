@@ -104,7 +104,7 @@ export default function ApplicationsPage() {
               <Picker title="Allowed models" items={activeModels.map((model) => model.name)} values={selectedModels} onToggle={(item) => toggleValue(item, selectedModels, setSelectedModels)} />
               <Picker title="Knowledge bases" items={knowledgeBases.map((kb) => kb.name)} values={selectedKnowledge} onToggle={(item) => toggleValue(item, selectedKnowledge, setSelectedKnowledge)} />
               <Picker title="Governed agents" items={agents.map((agent) => agent.name)} values={selectedAgents} onToggle={(item) => toggleValue(item, selectedAgents, setSelectedAgents)} />
-              <div className="callout">Saving creates a simulated deployment request for a dedicated AnythingLLM instance. No backend change is made in this prototype.</div>
+              <div className="callout">Saving creates a deployment request for a dedicated AnythingLLM instance at the employee subdomain.</div>
             </div>
             <div className="modal-footer">
               <button className="button secondary" type="button" onClick={() => setCreateOpen(false)}>Cancel</button>

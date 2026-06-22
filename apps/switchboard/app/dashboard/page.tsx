@@ -16,21 +16,17 @@ export default function DashboardPage() {
   return (
     <div className="page">
       <PageHeader eyebrow="Command Center" title="AI estate overview" description="Health, application availability, cost, capacity, and evidence readiness for Acme Corp." action={<ButtonLink href="/dashboard/applications">Create AI Application</ButtonLink>} />
-      <section className="application-hero" style={{ marginBottom: 18 }}>
-        <div className="row">
-          <div>
-            <p className="eyebrow" style={{ color: "var(--brand-accent)" }}>AI Ops Status</p>
-            <h2 style={{ margin: 0, fontSize: 30 }}>Warning</h2>
-            <p>Legal Sandbox is offline, Claims GPU is above 90%, and OpenAI latency is degraded. Employee chat content remains on customer infrastructure.</p>
-          </div>
-          <div className="row"><ButtonLink href="/dashboard/operations" secondary>Open operations</ButtonLink><ButtonLink href="/dashboard/safeguards">Review safeguards</ButtonLink></div>
-        </div>
-      </section>
       <div className="grid kpis">
+        <Card pad className="status-card"><div className="row"><span className="metric-label">AI Ops Status</span><StatusBadge value="Warning" /></div><div className="metric-value">3 issues</div><p className="muted">Legal agent offline, Claims GPU pressure, provider latency.</p></Card>
         <MetricCard label="AI Applications" value={`${liveApps}/${applications.length} live`} detail="AnythingLLM instances" status="Warning" />
         <MetricCard label="Infrastructure" value={`${infrastructureTargets.length - offlineTargets}/${infrastructureTargets.length} online`} detail="Agent-connected servers" status={offlineTargets ? "Warning" : "Healthy"} />
         <MetricCard label="Monthly requests" value={formatNumber(monthlyRequests)} detail="Across governed chat URLs" status="Healthy" />
+      </div>
+      <div className="grid kpis" style={{ marginTop: 16 }}>
         <MetricCard label="Projected spend" value={aed(projectedSpend)} detail="Metadata only, no content" status="Warning" />
+        <MetricCard label="Evidence readiness" value={`${organization.evidenceReadiness}%`} detail="ISO/IEC 42001 readiness support" status="Warning" />
+        <MetricCard label="Models available" value={String(modelCatalog.filter((model) => model.status === "Running" || model.status === "Connected").length)} detail="Assignable to applications" status="Healthy" />
+        <Card pad><div className="row"><span className="metric-label">Next action</span><StatusBadge value="Critical" /></div><div className="metric-value">Reconnect Legal</div><ButtonLink href="/dashboard/operations" secondary>Open operations</ButtonLink></Card>
       </div>
       <div className="grid two" style={{ marginTop: 18 }}>
         <Card>
