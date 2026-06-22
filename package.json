@@ -1,14 +1,17 @@
 {
-  "name": "ai-control-plane-mockup-workspace",
+  "name": "switchboard-ai-workspace",
   "private": true,
   "workspaces": [
     "apps/dashboard",
     "apps/switchboard"
   ],
   "scripts": {
-    "dev": "npm --workspace ai-control-plane-mockup run dev",
-    "build": "npm --workspace ai-control-plane-mockup run build",
-    "lint": "npm --workspace ai-control-plane-mockup run lint",
+    "dev": "npm --workspace switchboard-ai run dev",
+    "build": "npm --workspace switchboard-ai run build",
+    "test": "npm --workspace switchboard-ai run test",
+    "legacy:dev": "npm --workspace ai-control-plane-mockup run dev",
+    "legacy:build": "npm --workspace ai-control-plane-mockup run build",
+    "legacy:lint": "npm --workspace ai-control-plane-mockup run lint",
     "switchboard:dev": "npm --workspace switchboard-ai run dev",
     "switchboard:build": "npm --workspace switchboard-ai run build",
     "switchboard:test": "npm --workspace switchboard-ai run test"
