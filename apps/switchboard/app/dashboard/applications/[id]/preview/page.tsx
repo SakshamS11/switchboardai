@@ -29,6 +29,8 @@ export default function WorkspacePreviewPage({ params }: { params: Promise<{ id:
   }, [workspace]);
 
   if (!workspace) return <div className="page"><Card pad><h2>Workspace preview unavailable</h2><p className="muted">Return to AI Workspaces and select an active workspace.</p></Card></div>;
+  const workspaceName = workspace.name;
+  const primaryKnowledgeBase = workspace.knowledgeBases[0] ?? "the approved knowledge base";
 
   function sendMessage() {
     if (!draft.trim()) return;
@@ -37,9 +39,9 @@ export default function WorkspacePreviewPage({ params }: { params: Promise<{ id:
     setDraft("");
     setLoading(true);
     window.setTimeout(() => {
-      setMessages((current) => [...current, { role: "assistant", text: `Based on ${workspace.knowledgeBases[0] ?? "the approved knowledge base"}, the request should follow the workspace policy. Source: ${workspace.knowledgeBases[0] ?? "Approved source"} / Section 4.2. Route: ${routeStatus}.` }]);
+      setMessages((current) => [...current, { role: "assistant", text: `Based on ${primaryKnowledgeBase}, the request should follow the workspace policy. Source: ${primaryKnowledgeBase} / Section 4.2. Route: ${routeStatus}.` }]);
       setLoading(false);
-      simulateAction("Employee preview response generated", workspace.name, "Workspace");
+      simulateAction("Employee preview response generated", workspaceName, "Workspace");
     }, 800);
   }
 

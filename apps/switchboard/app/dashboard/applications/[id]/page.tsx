@@ -14,6 +14,8 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Configuration");
   const app = applications.find((item) => item.id === id);
   if (!app) return <div className="page"><Card pad><h2>Workspace not found</h2><p className="muted">Return to the workspace registry and select an active record.</p></Card></div>;
+  const workspaceId = app.id;
+  const workspaceName = app.name;
   const target = infrastructureTargets.find((item) => item.id === app.targetServerId);
   const readiness = [
     { label: "Target server online", value: target?.agent === "Online" ? "Ready" : "Blocked" },
@@ -26,16 +28,16 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
   const canPublish = readiness.every((item) => item.value === "Ready");
 
   function handleDisable() {
-    const confirmed = window.confirm(`Disable ${app.name}? Employees will immediately lose access to this workspace.`);
-    if (confirmed) disableApplication(app.id);
+    const confirmed = window.confirm(`Disable ${workspaceName}? Employees will immediately lose access to this workspace.`);
+    if (confirmed) disableApplication(workspaceId);
   }
 
   function handlePublish() {
     if (!canPublish) {
-      simulateAction("Workspace publish blocked by readiness review", app.name, "Workspace");
+      simulateAction("Workspace publish blocked by readiness review", workspaceName, "Workspace");
       return;
     }
-    publishApplication(app.id);
+    publishApplication(workspaceId);
   }
 
   return (
