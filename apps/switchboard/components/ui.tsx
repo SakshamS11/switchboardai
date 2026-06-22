@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 
 export function StatusBadge({ value }: { value: string }) {
-  const key = value.toLowerCase().replace(/\s+/g, "-");
+  const key = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   return <span className={`badge ${key}`}>{value}</span>;
 }
 
