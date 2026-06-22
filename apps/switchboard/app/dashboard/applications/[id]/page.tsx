@@ -6,7 +6,7 @@ import { ButtonLink, Card, PageHeader, Progress, StatusBadge } from "@/component
 import { infrastructureTargets } from "@/lib/mock-data";
 import { aed, formatNumber, percent } from "@/lib/utils";
 
-const tabs = ["Configuration", "Deployment", "Usage", "Safeguards"] as const;
+const tabs = ["Configuration", "Deployment", "Usage"] as const;
 
 export default function ApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -15,6 +15,29 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
   const app = applications.find((item) => item.id === id);
   if (!app) return <div className="page"><Card pad><h2>Workspace not found</h2><p className="muted">Return to the workspace registry and select an active record.</p></Card></div>;
   const target = infrastructureTargets.find((item) => item.id === app.targetServerId);
+  const readiness = [
+    { label: "Target server online", value: target?.agent === "Online" ? "Ready" : "Blocked" },
+    { label: "Required stack running", value: target?.stack && target.stack !== "No stack" ? "Ready" : "Blocked" },
+    { label: "Active models selected", value: app.allowedModels.length ? "Ready" : "Blocked" },
+    { label: "Knowledge assigned", value: app.knowledgeBases.length ? "Ready" : "Blocked" },
+    { label: "Team assigned", value: app.team ? "Ready" : "Blocked" },
+    { label: "Routing policy valid", value: app.routingPolicy ? "Ready" : "Blocked" }
+  ];
+  const canPublish = readiness.every((item) => item.value === "Ready");
+
+  function handleDisable() {
+    const confirmed = window.confirm(`Disable ${app.name}? Employees will immediately lose access to this workspace.`);
+    if (confirmed) disableApplication(app.id);
+  }
+
+  function handlePublish() {
+    if (!canPublish) {
+      simulateAction("Workspace publish blocked by readiness review", app.name, "Workspace");
+      return;
+    }
+    publishApplication(app.id);
+  }
+
   return (
     <div className="page">
       <PageHeader eyebrow="AI Workspace" title={app.name} description={`${app.team} employee AI workspace with governed models, knowledge and agents.`} action={<ButtonLink href="/dashboard/applications" secondary>Back to workspaces</ButtonLink>} />
@@ -23,10 +46,9 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
       </section>
       <div className="grid kpis"><Card pad><span className="metric-label">Status</span><div className="metric-value"><StatusBadge value={app.status} /></div><p className="muted">{app.lastDeployed}</p></Card><Card pad><span className="metric-label">Target server</span><div className="metric-value" style={{ fontSize: 18 }}>{target?.name ?? "Unassigned"}</div><p className="muted">{target?.agent ?? "No agent"}</p></Card><Card pad><span className="metric-label">Monthly requests</span><div className="metric-value">{formatNumber(app.monthlyRequests)}</div><p className="muted">{app.activeUsers} active users</p></Card><Card pad><span className="metric-label">Spend</span><div className="metric-value">{aed(app.spendUsedAed)}</div><Progress value={percent(app.spendUsedAed, app.spendBudgetAed)} /></Card></div>
       <div className="tabs" style={{ marginTop: 18 }}>{tabs.map((tab) => <button key={tab} className={`tab ${activeTab === tab ? "active" : ""}`} onClick={() => setActiveTab(tab)}>{tab}</button>)}</div>
-      {activeTab === "Configuration" ? <Card pad style={{ marginTop: 18 }}><h3>Configuration</h3><div className="grid three"><Detail label="Chat engine" value="AnythingLLM" /><Detail label="Subdomain slug" value={app.slug} /><Detail label="External model rule" value={app.externalModelRule} /><Detail label="Allowed models" value={app.allowedModels.join(", ")} /><Detail label="Knowledge bases" value={app.knowledgeBases.join(", ")} /><Detail label="Governed agents" value={app.agents.join(", ")} /></div></Card> : null}
-      {activeTab === "Deployment" ? <Card pad style={{ marginTop: 18 }}><h3>Deployment</h3><p className="muted">Publishing sends a typed allowlisted deploy command to the infrastructure agent. No arbitrary shell command is possible.</p><div className="grid three"><Detail label="Deployment status" value={app.status} /><Detail label="Target server" value={target?.name ?? "Unassigned"} /><Detail label="Last deployed" value={app.lastDeployed} /></div><div className="row" style={{ justifyContent: "flex-start", marginTop: 16 }}><button className="button" onClick={() => redeployApplication(app.id)}>Redeploy</button><button className="button secondary" onClick={() => publishApplication(app.id)}>Publish</button><button className="button secondary" onClick={() => disableApplication(app.id)}>Disable</button></div></Card> : null}
+      {activeTab === "Configuration" ? <Card pad style={{ marginTop: 18 }}><h3>Configuration</h3><div className="grid three"><Detail label="Chat interface type" value="Managed workspace chat runtime" /><Detail label="Subdomain slug" value={app.slug} /><Detail label="External model rule" value={app.externalModelRule} /><Detail label="Allowed models" value={app.allowedModels.join(", ")} /><Detail label="Knowledge bases" value={app.knowledgeBases.join(", ")} /><Detail label="Governed agents" value={app.agents.join(", ") || "None assigned"} /><Detail label="Routing and safeguards" value={`${app.routingPolicy}; restricted routes fail closed`} /></div></Card> : null}
+      {activeTab === "Deployment" ? <Card pad style={{ marginTop: 18 }}><h3>Deployment</h3><p className="muted">Publishing uses typed, allowlisted deployment steps. No arbitrary shell command is available.</p><div className="grid three"><Detail label="Deployment status" value={app.status} /><Detail label="Target server" value={target?.name ?? "Unassigned"} /><Detail label="Last deployed" value={app.lastDeployed} /></div><h3 style={{ marginTop: 18 }}>Readiness review</h3><div className="control-list">{readiness.map((item) => <div className="control-row" key={item.label}><div><strong>{item.label}</strong><small>{item.value === "Ready" ? "Dependency is satisfied" : "Resolve this before publishing"}</small></div><StatusBadge value={item.value} /></div>)}</div><div className="row" style={{ justifyContent: "flex-start", marginTop: 16 }}><button className="button" onClick={app.status === "Live" ? () => redeployApplication(app.id) : handlePublish}>{app.status === "Live" ? "Redeploy" : "Publish workspace"}</button><button className="button secondary" onClick={handleDisable}>Disable workspace</button></div></Card> : null}
       {activeTab === "Usage" ? <Card pad style={{ marginTop: 18 }}><h3>Usage</h3><div className="grid three"><Detail label="Active users" value={String(app.activeUsers)} /><Detail label="Tokens used" value={`${formatNumber(app.tokensUsed)} / ${formatNumber(app.tokenBudget)}`} /><Detail label="Average latency" value={`${app.avgLatencyMs} ms`} /></div></Card> : null}
-      {activeTab === "Safeguards" ? <Card pad style={{ marginTop: 18 }}><h3>Safeguards</h3><div className="callout">Sensitive prompts route to approved local models first. Restricted routes fail closed if no local model is available.</div><div className="grid three" style={{ marginTop: 14 }}><Detail label="Routing policy" value={app.routingPolicy} /><Detail label="Data boundary" value="Customer infrastructure" /><Detail label="Audit mode" value="Metadata and policy decisions only" /></div></Card> : null}
     </div>
   );
 }

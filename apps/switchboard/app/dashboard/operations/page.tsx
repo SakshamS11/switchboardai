@@ -18,7 +18,7 @@ const incidents = [
     owner: "Infrastructure",
     due: "18 min",
     action: "Restart agent",
-    nextStep: "Reconnect the Legal Sandbox agent, then redeploy the AnythingLLM instance if configuration drift is detected."
+    nextStep: "Reconnect the Legal Sandbox agent, then redeploy the workspace chat runtime if configuration drift is detected."
   },
   {
     id: "claims-gpu-pressure",

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { CSSProperties, ReactNode } from "react";
 
 export function StatusBadge({ value }: { value: string }) {
@@ -7,7 +10,9 @@ export function StatusBadge({ value }: { value: string }) {
 }
 
 export function PageHeader({ eyebrow, title, description, action }: { eyebrow: string; title: string; description: string; action?: ReactNode }) {
-  const documentationHref = `/dashboard/documentation?topic=${encodeURIComponent(title)}`;
+  const pathname = usePathname();
+  const topic = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const documentationHref = `/dashboard/documentation?topic=${encodeURIComponent(topic)}&from=${encodeURIComponent(pathname)}`;
   return (
     <div className="page-header">
       <div>

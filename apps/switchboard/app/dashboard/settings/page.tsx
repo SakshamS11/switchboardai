@@ -23,13 +23,18 @@ export default function SettingsPage() {
     simulateAction("Saved organization settings", "Settings");
   }
 
+  function handleResetDemoData() {
+    const confirmed = window.confirm("Reset demo data? This restores seeded workspaces and audit events for this browser session.");
+    if (confirmed) resetDemoData();
+  }
+
   return (
     <div className="page">
       <PageHeader eyebrow="System" title="Settings" description="Manage organisation profile, thresholds, notifications, retention, and governance defaults." action={<button className="button" type="button" onClick={saveSettings}>Save changes</button>} />
       <div className="grid kpis">
         <MetricCard label="Organisation" value={orgName} detail={domain} status="Healthy" />
         <MetricCard label="Data region" value={region} detail="Customer-selected residency" status="Healthy" />
-        <MetricCard label="Default chat" value="AnythingLLM" detail="Deployed per application" status="Healthy" />
+        <MetricCard label="Default chat" value="Workspace runtime" detail="Deployed per AI Workspace" status="Healthy" />
         <MetricCard label="Settings state" value={saveState} detail="Last action in this session" status={saveState === "Saved" ? "Healthy" : "Pending"} />
       </div>
 
@@ -57,7 +62,7 @@ export default function SettingsPage() {
           <label className="field-group"><span className="metric-label">Alert channels</span><select className="field" value={notifications} onChange={(event) => setNotifications(event.target.value)}><option>Slack and email</option><option>Email only</option><option>Slack only</option><option>Webhook only</option></select></label>
           <p className="muted">Critical incidents, provider degradation, and approval requests use these channels.</p>
           <StatusBadge value="Connected" />
-          <button className="button secondary" type="button" style={{ marginTop: 12 }} onClick={() => simulateAction("Tested notification integration", notifications, "Settings")}>Test Integration</button>
+          <button className="button secondary" type="button" style={{ marginTop: 12 }} onClick={() => simulateAction("Tested notification integration", notifications, "Settings")}>Test integration</button>
         </Card>
         <Card pad>
           <h3>Governance and retention</h3>
@@ -66,7 +71,7 @@ export default function SettingsPage() {
             <div className="control-row"><div><strong>Human approval for external actions</strong><small>Default for governed agents</small></div><StatusBadge value="Active" /></div>
             <div className="control-row"><div><strong>Restricted data fails closed</strong><small>No external fallback for restricted knowledge</small></div><StatusBadge value="Active" /></div>
           </div>
-          <button className="button secondary" type="button" style={{ marginTop: 14 }} onClick={resetDemoData}>Reset Demo Data</button>
+          <button className="button secondary" type="button" style={{ marginTop: 14 }} onClick={handleResetDemoData}>Reset demo data</button>
         </Card>
       </div>
     </div>

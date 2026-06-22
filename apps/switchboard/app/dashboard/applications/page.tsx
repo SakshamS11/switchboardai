@@ -58,13 +58,13 @@ export default function ApplicationsPage() {
       <PageHeader eyebrow="AI Management" title="AI Workspaces" description="Create governed employee AI workspaces with model, knowledge, agent, budget and routing controls." action={<button className="button" type="button" onClick={() => setCreateOpen(true)}>Create workspace</button>} />
       <div className="grid kpis">
         <Card pad><span className="metric-label">Workspaces</span><div className="metric-value">{applications.length}</div><p className="muted">Configured employee AI experiences</p></Card>
-        <Card pad><span className="metric-label">Live URLs</span><div className="metric-value">{applications.filter((app) => app.status === "Live").length}</div><p className="muted">Active AnythingLLM subdomains</p></Card>
+        <Card pad><span className="metric-label">Live URLs</span><div className="metric-value">{applications.filter((app) => app.status === "Live").length}</div><p className="muted">Active workspace subdomains</p></Card>
         <Card pad><span className="metric-label">Local-only workspaces</span><div className="metric-value">{applications.filter((app) => app.externalModelRule === "Blocked").length}</div><p className="muted">No external model route</p></Card>
         <Card pad><span className="metric-label">Workspace spend</span><div className="metric-value">{aed(applications.reduce((sum, app) => sum + app.spendUsedAed, 0))}</div><p className="muted">Current period usage metadata</p></Card>
       </div>
       <Card style={{ marginTop: 18 }}>
         <div className="card-header"><div><h3>Workspace registry</h3><p className="muted">The subdomain URL is the employee launch link after publication.</p></div></div>
-        <div className="table-wrap"><table><thead><tr><th>Workspace</th><th>Team</th><th>Chat URL</th><th>Status</th><th>Models</th><th>Budget</th><th>Action</th></tr></thead><tbody>{applications.map((app) => <tr key={app.id}><td><strong>{app.name}</strong><br /><span className="muted">{app.chatEngine} - {app.purpose}</span></td><td>{app.team}</td><td>{app.status === "Live" ? <a className="muted" href={app.url} target="_blank" rel="noreferrer">{app.url.replace("https://", "")}</a> : <span className="muted">{app.url.replace("https://", "")} not live</span>}</td><td><StatusBadge value={app.status} /></td><td>{app.allowedModels.length}</td><td><Progress value={percent(app.tokensUsed, app.tokenBudget)} /></td><td><Link className="button secondary" href={`/dashboard/applications/${app.id}`}>Manage</Link></td></tr>)}</tbody></table></div>
+        <div className="table-wrap"><table><thead><tr><th>Workspace</th><th>Team</th><th>Chat URL</th><th>Status</th><th>Models</th><th>Budget</th><th>Action</th></tr></thead><tbody>{applications.map((app) => <tr key={app.id}><td><strong>{app.name}</strong><br /><span className="muted">{app.purpose}</span></td><td>{app.team}</td><td>{app.status === "Live" ? <Link className="muted" href={`/dashboard/applications/${app.id}/preview`}>{app.url.replace("https://", "")}</Link> : <span className="muted">{app.url.replace("https://", "")} not live</span>}</td><td><StatusBadge value={app.status} /></td><td>{app.allowedModels.length}</td><td><Progress value={percent(app.tokensUsed, app.tokenBudget)} /></td><td><Link className="button secondary" href={`/dashboard/applications/${app.id}`}>Manage</Link></td></tr>)}</tbody></table></div>
       </Card>
       {lastCreated ? <Card pad style={{ marginTop: 18 }}><div className="row"><div><h3>Workspace draft ready</h3><p className="muted">{lastCreated}</p></div><ButtonLink href="/dashboard/operations" secondary>View monitoring</ButtonLink></div></Card> : null}
       {createOpen ? (
@@ -74,7 +74,7 @@ export default function ApplicationsPage() {
               <div>
                 <p className="eyebrow">New AI Workspace</p>
                 <h3 id="create-application-title">Configure governed employee chat</h3>
-                <p className="muted">Switchboard AI configures policy. AnythingLLM provides the employee chat interface.</p>
+                <p className="muted">Switchboard AI configures the governed employee workspace, chat route, access, and policy boundaries.</p>
               </div>
               <button className="button secondary" type="button" onClick={() => setCreateOpen(false)}>Close</button>
             </div>
@@ -86,7 +86,7 @@ export default function ApplicationsPage() {
                 <label className="field-group"><span className="metric-label">Subdomain</span><input className="field" value={subdomain} onChange={(event) => setSubdomain(slugify(event.target.value))} /></label>
                 <label className="field-group"><span className="metric-label">Target server</span><select className="field" value={targetServerId} onChange={(event) => setTargetServerId(event.target.value)}>{onlineTargets.map((target) => <option value={target.id} key={target.id}>{target.name}</option>)}</select></label>
                 <Field label="Employee URL preview" value={`chat.${subdomain || generatedSlug}.acme.ai`} />
-                <Field label="Chat engine" value="AnythingLLM - deployed per application" />
+                <Field label="Chat interface type" value="Managed workspace chat runtime" />
                 <label className="field-group"><span className="metric-label">Monthly token budget</span><input className="field" type="number" value={tokenBudget} onChange={(event) => setTokenBudget(Number(event.target.value))} /></label>
                 <label className="field-group"><span className="metric-label">Monthly spend budget AED</span><input className="field" type="number" value={spendBudgetAed} onChange={(event) => setSpendBudgetAed(Number(event.target.value))} /></label>
                 <label className="field-group"><span className="metric-label">External model rule</span><select className="field" value={externalModelRule} onChange={(event) => setExternalModelRule(event.target.value as "Allowed" | "Restricted" | "Blocked")}><option>Restricted</option><option>Allowed</option><option>Blocked</option></select></label>

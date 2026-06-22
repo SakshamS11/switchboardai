@@ -98,16 +98,23 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   function updateApplication(id: string, changes: Partial<AIApplication>, action: string) {
     const app = applications.find((item) => item.id === id);
     setApplications((current) => current.map((item) => item.id === id ? { ...item, ...changes } : item));
-    if (app) recordAudit(action, app.name, "Application");
+    if (app) recordAudit(action, app.name, "Workspace");
     showToast(`${action} queued. Audit entry recorded.`);
   }
 
   function publishApplication(id: string) {
-    updateApplication(id, { status: "Live", lastDeployed: "Just now" }, "Published AI Workspace");
+    const app = applications.find((item) => item.id === id);
+    if (!app) return;
+    updateApplication(id, { status: "Deploying", lastDeployed: "Validating configuration" }, "Started AI Workspace deployment");
+    window.setTimeout(() => {
+      setApplications((current) => current.map((item) => item.id === id ? { ...item, status: "Live", lastDeployed: "Live just now" } : item));
+      recordAudit("AI Workspace deployment completed", app.name, "Workspace");
+      showToast(`${app.name} is live. Employee preview is available.`);
+    }, 1300);
   }
 
   function redeployApplication(id: string) {
-    updateApplication(id, { status: "Deploying", lastDeployed: "Redeploy requested" }, "Redeploy AnythingLLM instance");
+    updateApplication(id, { status: "Deploying", lastDeployed: "Redeploy requested" }, "Redeployed workspace chat runtime");
   }
 
   function disableApplication(id: string) {

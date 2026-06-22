@@ -36,7 +36,7 @@ export default function DashboardPage() {
       <PageHeader
         eyebrow="Command Center"
         title="AI operations command center"
-        description="Live health, spend, capacity, routing, and team usage for governed AI applications."
+        description="Live health, spend, capacity, routing, and team usage for governed AI workspaces."
       />
 
       <section className="overview-status-strip">
@@ -52,7 +52,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="overview-kpi-grid">
-        <SharpKpi label="AI applications" value={`${liveApps}/${applications.length}`} detail="live AnythingLLM instances" status="Warning" />
+        <SharpKpi label="AI workspaces" value={`${liveApps}/${applications.length}`} detail="live employee workspace URLs" status="Warning" />
         <SharpKpi label="Infrastructure" value={`${onlineTargets}/${infrastructureTargets.length}`} detail="agent-connected servers" status="Warning" />
         <SharpKpi label="Active issues" value={String(operations.length)} detail="1 critical, 2 warnings" status="Critical" />
         <SharpKpi label="Monthly requests" value={formatNumber(monthlyRequests)} detail="through governed chat URLs" status="Healthy" />

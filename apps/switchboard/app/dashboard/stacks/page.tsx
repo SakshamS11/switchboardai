@@ -7,7 +7,7 @@ const stacks = [
   { name: "Private RAG Stack", purpose: "Private retrieval over approved team knowledge sources.", scale: "Team or department workload", services: "Qdrant, embeddings worker, gateway, Postgres", version: "v0.2", requirements: "8 vCPU, 32GB RAM", status: "Running" },
   { name: "Developer AI Stack", purpose: "Engineering coding assistant backed by local and approved external models.", scale: "Engineering teams", services: "Ollama, DeepSeek runtime, gateway", version: "v0.1", requirements: "GPU server, 16GB+ VRAM", status: "Running" },
   { name: "Secure Local-Only Stack", purpose: "Restricted data workflows with no external model fallback.", scale: "Legal, Claims, Finance", services: "vLLM, Qdrant, audit collector", version: "v0.2", requirements: "24GB+ VRAM", status: "Deployable" },
-  { name: "Governed Chat Workspace", purpose: "Employee chat interface generated when an AI Workspace is published.", scale: "One instance per workspace", services: "AnythingLLM, Nginx, SSL", version: "Auto", requirements: "1 vCPU, 1GB RAM per workspace", status: "Automatic" }
+  { name: "Governed Chat Workspace", purpose: "Employee chat interface generated when an AI Workspace is published.", scale: "One instance per workspace", services: "Workspace chat runtime, Nginx, SSL", version: "Auto", requirements: "1 vCPU, 1GB RAM per workspace", status: "Automatic" }
 ];
 
 export default function StacksPage() {
