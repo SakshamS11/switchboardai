@@ -1,4 +1,4 @@
-import type { AIApplication, AuditEvent, GovernedAgent, InfrastructureTarget, KnowledgeBase, ModelRecord, RoutingPolicy, Team } from "./types";
+import type { AIApplication, AuditEvent, GovernedAgent, Incident, InfrastructureTarget, KnowledgeBase, ModelRecord, RoutingPolicy, StackDeployment, StackTemplate, Team } from "./types";
 
 export const organization = {
   name: "Acme Corp",
@@ -65,8 +65,84 @@ export const auditEvents: AuditEvent[] = [
   { id: "audit-5", time: "10:51", actor: "governance-lead", type: "Evidence", action: "Exported readiness evidence", target: "ISO/IEC 42001 pack", status: "Success" }
 ];
 
+export const incidents: Incident[] = [
+  {
+    id: "legal-agent-offline",
+    severity: "Critical",
+    status: "Open",
+    title: "Legal Sandbox agent offline",
+    category: "Infrastructure",
+    affected: "Legal AI Assistant",
+    affectedServices: ["Workspace deployment", "Legal Contracts retrieval", "Contract Review Agent"],
+    businessImpact: "Legal users cannot access the governed local workspace until the agent reconnects.",
+    evidence: "No heartbeat for 42 minutes. Last stack check failed because the agent is offline.",
+    owner: "Infrastructure",
+    age: "42 min",
+    openedAt: "11:52",
+    recommendedAction: "Restart the Legal Sandbox agent and confirm the workspace runtime reports healthy.",
+    serverId: "legal-sandbox",
+    timeline: [
+      { time: "11:52", actor: "system", event: "Heartbeat missed", outcome: "Incident opened" },
+      { time: "11:54", actor: "system", event: "Workspace availability check failed", outcome: "Legal AI Assistant unavailable" }
+    ]
+  },
+  {
+    id: "claims-gpu-pressure",
+    severity: "Warning",
+    status: "Open",
+    title: "Claims GPU near VRAM limit",
+    category: "Capacity",
+    affected: "Claims On-Prem Node",
+    affectedServices: ["Qwen 32B Local", "Claims AI Assistant", "Claims Summary Agent"],
+    businessImpact: "Claims AI latency may increase and private RAG jobs may queue during peak processing.",
+    evidence: "GPU 92%, VRAM 22/24GB for 34 minutes.",
+    owner: "Platform Ops",
+    age: "34 min",
+    openedAt: "12:00",
+    recommendedAction: "Review capacity and deploy an additional local replica before adding load.",
+    serverId: "claims-node",
+    timeline: [
+      { time: "12:00", actor: "system", event: "GPU warning threshold crossed", outcome: "Incident opened" }
+    ]
+  },
+  {
+    id: "provider-latency",
+    severity: "Warning",
+    status: "Open",
+    title: "OpenAI latency degraded",
+    category: "Provider",
+    affected: "External-enabled workspaces",
+    affectedServices: ["GPT-4o routing", "Engineering Copilot", "Support Desk AI"],
+    businessImpact: "Critical workflows may slow down unless approved fallbacks remain active.",
+    evidence: "Provider health degraded 48 seconds ago; P95 latency above normal band.",
+    owner: "AI Platform",
+    age: "12 min",
+    openedAt: "12:22",
+    recommendedAction: "Confirm critical work is routed to Claude Sonnet or local Qwen fallback by sensitivity.",
+    provider: "OpenAI",
+    timeline: [
+      { time: "12:22", actor: "system", event: "Provider drift detected", outcome: "Fallback policy verified" }
+    ]
+  }
+];
+
+export const stackTemplates: StackTemplate[] = [
+  { id: "private-ai-basic", name: "Private AI Basic - Ollama", bestUse: "Starter local model serving for smaller internal workloads.", services: ["Ollama", "Qdrant", "Postgres"], requirements: "8 vCPU, 32GB RAM, 16GB VRAM", minVramGb: 16, compatibility: ["On-prem GPU", "Azure VM", "AWS EC2"] },
+  { id: "private-ai-production", name: "Private AI Production - vLLM", bestUse: "Production local model serving for high-throughput workspaces.", services: ["vLLM", "LiteLLM", "Qdrant", "Postgres"], requirements: "16 vCPU, 64GB RAM, 24GB+ VRAM", minVramGb: 24, compatibility: ["On-prem GPU", "Azure VM", "AWS EC2"] },
+  { id: "private-rag", name: "Private RAG Stack", bestUse: "Private retrieval over approved team knowledge sources.", services: ["Qdrant", "Embeddings worker", "Gateway", "Postgres"], requirements: "8 vCPU, 32GB RAM", minVramGb: 0, compatibility: ["On-prem GPU", "Azure VM", "AWS EC2"] },
+  { id: "developer-ai", name: "Developer AI Stack", bestUse: "Engineering coding assistant backed by local and approved external models.", services: ["Ollama", "DeepSeek runtime", "Gateway"], requirements: "GPU server, 16GB+ VRAM", minVramGb: 16, compatibility: ["On-prem GPU", "Azure VM", "AWS EC2"] },
+  { id: "secure-local", name: "Secure Local-Only Stack", bestUse: "Restricted data workflows with no external model fallback.", services: ["vLLM", "Qdrant", "Audit collector"], requirements: "24GB+ VRAM", minVramGb: 24, compatibility: ["On-prem GPU", "Azure VM"] },
+  { id: "governed-chat", name: "Governed Chat Workspace", bestUse: "Automatically provisioned when an AI Workspace is published.", services: ["Workspace chat runtime", "Nginx", "SSL"], requirements: "1 vCPU, 1GB RAM per workspace", minVramGb: 0, compatibility: ["On-prem GPU", "Azure VM", "AWS EC2", "Workstation"], automatic: true }
+];
+
+export const stackDeployments: StackDeployment[] = [
+  { id: "deploy-acme-prod", name: "Production local model runtime", templateId: "private-ai-production", serverId: "acme-azure", version: "v0.2", services: ["vLLM", "LiteLLM", "Qdrant", "Postgres"], status: "Running", health: "Healthy", updated: "Today 09:18" },
+  { id: "deploy-claims-rag", name: "Claims retrieval runtime", templateId: "private-rag", serverId: "claims-node", version: "v0.2", services: ["Qdrant", "Embeddings worker", "Gateway", "Postgres"], status: "Running", health: "Warning", updated: "Today 10:04" },
+  { id: "deploy-aws-dev", name: "Engineering developer runtime", templateId: "developer-ai", serverId: "aws-private", version: "v0.1", services: ["Ollama", "DeepSeek runtime", "Gateway"], status: "Running", health: "Healthy", updated: "Yesterday 16:04" }
+];
+
 export const operations = [
   { severity: "Critical", title: "Legal Sandbox agent offline", affected: "Legal AI Assistant", action: "Reconnect agent before application can go Live", owner: "Infrastructure", href: "/dashboard/infrastructure" },
   { severity: "Warning", title: "Claims GPU near VRAM limit", affected: "Claims On-Prem Node", action: "Simulate capacity reallocation before adding load", owner: "Platform Ops", href: "/dashboard/cost-capacity" },
   { severity: "Warning", title: "OpenAI latency degraded", affected: "External-enabled applications", action: "Confirm fallback policy is active", owner: "AI Platform", href: "/dashboard/safeguards" }
-] as const;
+];

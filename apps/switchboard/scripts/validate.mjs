@@ -8,6 +8,7 @@ const requiredFiles = [
   "app/dashboard/applications/page.tsx",
   "app/dashboard/applications/[id]/page.tsx",
   "app/dashboard/infrastructure/page.tsx",
+  "app/dashboard/infrastructure/[id]/page.tsx",
   "app/dashboard/stacks/page.tsx",
   "app/dashboard/model-catalog/page.tsx",
   "app/dashboard/safeguards/page.tsx",
