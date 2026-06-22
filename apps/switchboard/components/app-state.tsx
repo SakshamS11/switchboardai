@@ -2,16 +2,18 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { applications as seedApplications, auditEvents as seedAudit } from "@/lib/mock-data";
-import type { AIApplication, AuditEvent } from "@/lib/types";
+import type { AIApplication, AuditEvent, CreateApplicationInput } from "@/lib/types";
 
 type AppContextValue = {
   applications: AIApplication[];
   auditEvents: AuditEvent[];
   toast: string | null;
+  createApplication: (input: CreateApplicationInput) => AIApplication;
   publishApplication: (id: string) => void;
   redeployApplication: (id: string) => void;
   disableApplication: (id: string) => void;
   recordAudit: (action: string, target: string, type?: string) => void;
+  simulateAction: (action: string, target: string, type?: string) => void;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -56,6 +58,42 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setAuditEvents((current) => [event, ...current]);
   }
 
+  function simulateAction(action: string, target: string, type = "Configuration") {
+    recordAudit(action, target, type);
+    showToast(`${action} simulated. Audit entry added to this browser session.`);
+  }
+
+  function createApplication(input: CreateApplicationInput) {
+    const application: AIApplication = {
+      id: `${input.slug}-${Date.now()}`,
+      name: input.name,
+      team: input.team,
+      purpose: input.purpose,
+      slug: input.slug,
+      url: `https://chat.${input.slug}.acme.ai`,
+      status: "Deploying",
+      targetServerId: input.targetServerId,
+      chatEngine: "AnythingLLM",
+      allowedModels: input.allowedModels,
+      knowledgeBases: input.knowledgeBases,
+      agents: input.agents,
+      routingPolicy: input.routingPolicy,
+      tokenBudget: input.tokenBudget,
+      tokensUsed: 0,
+      spendBudgetAed: input.spendBudgetAed,
+      spendUsedAed: 0,
+      externalModelRule: input.externalModelRule,
+      lastDeployed: "Deployment pending",
+      activeUsers: 0,
+      monthlyRequests: 0,
+      avgLatencyMs: 0
+    };
+    setApplications((current) => [application, ...current]);
+    recordAudit("Created AI Application deployment request", application.name, "Application");
+    showToast(`${application.name} deployment request created. No backend change was made.`);
+    return application;
+  }
+
   function updateApplication(id: string, changes: Partial<AIApplication>, action: string) {
     const app = applications.find((item) => item.id === id);
     setApplications((current) => current.map((item) => item.id === id ? { ...item, ...changes } : item));
@@ -75,7 +113,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     updateApplication(id, { status: "Disabled" }, "Disable application");
   }
 
-  const value = useMemo(() => ({ applications, auditEvents, toast, publishApplication, redeployApplication, disableApplication, recordAudit }), [applications, auditEvents, toast]);
+  const value = useMemo(() => ({ applications, auditEvents, toast, createApplication, publishApplication, redeployApplication, disableApplication, recordAudit, simulateAction }), [applications, auditEvents, toast]);
 
   return (
     <AppContext.Provider value={value}>

@@ -27,6 +27,21 @@ export type AIApplication = {
   avgLatencyMs: number;
 };
 
+export type CreateApplicationInput = {
+  name: string;
+  team: string;
+  purpose: string;
+  slug: string;
+  targetServerId: string;
+  allowedModels: string[];
+  knowledgeBases: string[];
+  agents: string[];
+  routingPolicy: string;
+  tokenBudget: number;
+  spendBudgetAed: number;
+  externalModelRule: "Allowed" | "Restricted" | "Blocked";
+};
+
 export type InfrastructureTarget = {
   id: string;
   name: string;

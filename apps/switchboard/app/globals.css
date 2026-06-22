@@ -86,9 +86,23 @@ tr:hover td { background: rgba(238,241,246,.55); }
 .tab { min-height: 34px; border: 0; border-radius: 9px; background: transparent; color: var(--text-secondary); padding: 0 12px; font-weight: 700; }
 .tab.active { background: white; color: var(--brand-primary); box-shadow: 0 4px 12px rgba(17,24,39,.08); }
 .field { min-height: 40px; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0 12px; width: 100%; }
+.field-group { display: grid; gap: 6px; }
+.field-group.wide { grid-column: 1 / -1; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 22px; background: rgba(9,13,26,.46); }
+.modal { width: min(920px, 100%); max-height: min(860px, calc(100vh - 44px)); overflow: hidden; display: flex; flex-direction: column; background: white; border: 1px solid var(--border-subtle); border-radius: 18px; box-shadow: 0 28px 90px rgba(9,13,26,.28); }
+.modal-header, .modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-subtle); }
+.modal-header h3 { margin: 0; font-size: 22px; letter-spacing: -.02em; }
+.modal-footer { border-top: 1px solid var(--border-subtle); border-bottom: 0; justify-content: flex-end; }
+.modal-body { display: grid; gap: 16px; overflow-y: auto; padding: 20px; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.picker { display: grid; gap: 8px; }
+.chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { min-height: 32px; border: 1px solid var(--border-subtle); border-radius: 999px; padding: 0 12px; background: white; color: var(--text-secondary); font-size: 13px; font-weight: 700; }
+.chip.selected { border-color: rgba(91,61,255,.4); background: rgba(91,61,255,.09); color: var(--brand-primary); }
 @media (max-width: 1080px) {
   .app-shell { grid-template-columns: 1fr; }
   .sidebar { position: static; height: auto; }
   .grid.kpis, .grid.two, .grid.three { grid-template-columns: 1fr; }
   .topbar, .page-header { align-items: flex-start; flex-direction: column; }
+  .form-grid { grid-template-columns: 1fr; }
 }

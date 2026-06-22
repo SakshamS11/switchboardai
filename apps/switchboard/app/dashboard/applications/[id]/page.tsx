@@ -10,7 +10,7 @@ const tabs = ["Configuration", "Deployment", "Usage", "Safeguards"] as const;
 
 export default function ApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { applications, publishApplication, redeployApplication, disableApplication } = useAppState();
+  const { applications, publishApplication, redeployApplication, disableApplication, simulateAction } = useAppState();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Configuration");
   const app = applications.find((item) => item.id === id);
   if (!app) return <div className="page"><Card pad><h2>Application not found</h2><p className="muted">Return to the application registry and select an active record.</p></Card></div>;
@@ -19,7 +19,7 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
     <div className="page">
       <PageHeader eyebrow="AI Application" title={app.name} description={`${app.team} employee AI application powered by a dedicated AnythingLLM instance.`} action={<ButtonLink href="/dashboard/applications" secondary>Back to applications</ButtonLink>} />
       <section className="application-hero" style={{ marginBottom: 18 }}>
-        <div className="row"><div><p className="eyebrow" style={{ color: "var(--brand-accent)" }}>Employee launch URL</p><h2 style={{ margin: 0 }}>{app.url.replace("https://", "")}</h2><p>Employees access this governed application at its workspace subdomain. The admin configures policy; AnythingLLM handles chat.</p></div><div className="row"><button className="button secondary" onClick={() => navigator.clipboard?.writeText(app.url)}>Copy employee link</button><a className="button" href={app.url} target="_blank">Open chat interface</a></div></div>
+        <div className="row"><div><p className="eyebrow" style={{ color: "var(--brand-accent)" }}>Employee launch URL</p><h2 style={{ margin: 0 }}>{app.url.replace("https://", "")}</h2><p>Employees access this governed application at its workspace subdomain. The admin configures policy; AnythingLLM handles chat.</p></div><div className="row"><button className="button secondary" onClick={() => { navigator.clipboard?.writeText(app.url); simulateAction("Copied employee application link", app.name, "Application"); }}>Copy employee link</button><a className="button" href={app.url} target="_blank" rel="noreferrer">Open chat interface</a></div></div>
       </section>
       <div className="grid kpis"><Card pad><span className="metric-label">Status</span><div className="metric-value"><StatusBadge value={app.status} /></div><p className="muted">{app.lastDeployed}</p></Card><Card pad><span className="metric-label">Target server</span><div className="metric-value" style={{ fontSize: 18 }}>{target?.name ?? "Unassigned"}</div><p className="muted">{target?.agent ?? "No agent"}</p></Card><Card pad><span className="metric-label">Monthly requests</span><div className="metric-value">{formatNumber(app.monthlyRequests)}</div><p className="muted">{app.activeUsers} active users</p></Card><Card pad><span className="metric-label">Spend</span><div className="metric-value">{aed(app.spendUsedAed)}</div><Progress value={percent(app.spendUsedAed, app.spendBudgetAed)} /></Card></div>
       <div className="tabs" style={{ marginTop: 18 }}>{tabs.map((tab) => <button key={tab} className={`tab ${activeTab === tab ? "active" : ""}`} onClick={() => setActiveTab(tab)}>{tab}</button>)}</div>
