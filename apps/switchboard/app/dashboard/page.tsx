@@ -15,7 +15,7 @@ export default function DashboardPage() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow="Command Center" title="AI estate overview" description="Health, application availability, cost, capacity, and evidence readiness for Acme Corp." action={<ButtonLink href="/dashboard/applications">Create AI Application</ButtonLink>} />
+      <PageHeader eyebrow="Command Center" title="AI Estate Health" description="Current application availability, infrastructure, cost, capacity, and governance posture." action={<ButtonLink href="/dashboard/applications">Create AI Application</ButtonLink>} />
       <div className="grid kpis">
         <Card pad className="status-card"><div className="row"><span className="metric-label">AI Ops Status</span><StatusBadge value="Warning" /></div><div className="metric-value">3 issues</div><p className="muted">Legal agent offline, Claims GPU pressure, provider latency.</p></Card>
         <MetricCard label="AI Applications" value={`${liveApps}/${applications.length} live`} detail="AnythingLLM instances" status="Warning" />
@@ -26,7 +26,7 @@ export default function DashboardPage() {
         <MetricCard label="Projected spend" value={aed(projectedSpend)} detail="Metadata only, no content" status="Warning" />
         <MetricCard label="Evidence readiness" value={`${organization.evidenceReadiness}%`} detail="ISO/IEC 42001 readiness support" status="Warning" />
         <MetricCard label="Models available" value={String(modelCatalog.filter((model) => model.status === "Running" || model.status === "Connected").length)} detail="Assignable to applications" status="Healthy" />
-        <Card pad><div className="row"><span className="metric-label">Next action</span><StatusBadge value="Critical" /></div><div className="metric-value">Reconnect Legal</div><ButtonLink href="/dashboard/operations" secondary>Open operations</ButtonLink></Card>
+        <Card pad className="priority-action"><div className="row"><span className="metric-label">Priority response</span><StatusBadge value="Critical" /></div><h3>Restore Legal Sandbox agent</h3><p className="muted">Legal AI Assistant is unavailable until the agent reconnects.</p><ButtonLink href="/dashboard/operations" secondary>Open incident</ButtonLink></Card>
       </div>
       <div className="grid two" style={{ marginTop: 18 }}>
         <Card>
