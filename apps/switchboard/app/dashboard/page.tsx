@@ -48,7 +48,6 @@ export default function DashboardPage() {
         eyebrow="Command Center"
         title="AI operations command center"
         description="One view for application health, infrastructure pressure, provider risk, spend forecast, and team budget action."
-        action={<ButtonLink href="/dashboard/applications">Create AI Application</ButtonLink>}
       />
 
       <section className="overview-hero">
