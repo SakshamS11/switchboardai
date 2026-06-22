@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAppState } from "@/components/app-state";
 import { ButtonLink, Card, PageHeader, Progress, StatusBadge } from "@/components/ui";
-import { infrastructureTargets, modelCatalog, operations, teams } from "@/lib/mock-data";
+import { infrastructureTargets, operations, teams } from "@/lib/mock-data";
 import { aed, formatNumber, percent } from "@/lib/utils";
 
 const modelSpend = [
@@ -12,13 +12,6 @@ const modelSpend = [
   { name: "Qwen 32B Local", cost: 0, share: 18 },
   { name: "Falcon Local", cost: 0, share: 12 },
   { name: "DeepSeek Local", cost: 0, share: 7 }
-];
-
-const recommendedChanges = [
-  { change: "Restore Legal Sandbox agent", area: "Legal AI Assistant", impact: "Returns the application to service", href: "/dashboard/operations", tone: "Critical" },
-  { change: "Reclaim Finance GPU reserve", area: "Claims capacity", impact: "Reduces queue wait during peaks", href: "/dashboard/cost-capacity", tone: "Warning" },
-  { change: "Confirm OpenAI fallback policy", area: "Provider routing", impact: "Keeps critical work moving", href: "/dashboard/safeguards", tone: "Warning" },
-  { change: "Enable support cache ladder", area: "Cost control", impact: "Cuts repeated FAQ spend", href: "/dashboard/cost-capacity", tone: "Healthy" }
 ];
 
 const spendForecast = [
@@ -34,12 +27,8 @@ export default function DashboardPage() {
   const liveApps = applications.filter((app) => app.status === "Live").length;
   const monthlyRequests = applications.reduce((sum, app) => sum + app.monthlyRequests, 0);
   const projectedSpend = applications.reduce((sum, app) => sum + app.spendUsedAed, 0);
-  const activeUsers = applications.reduce((sum, app) => sum + app.activeUsers, 0);
   const onlineTargets = infrastructureTargets.filter((target) => target.agent === "Online").length;
   const peakGpu = Math.max(...infrastructureTargets.map((target) => target.gpuLoad));
-  const avgLatency = Math.round(applications.reduce((sum, app) => sum + app.avgLatencyMs, 0) / applications.length);
-  const totalBudget = teams.reduce((sum, team) => sum + team.spendBudgetAed, 0);
-  const totalSpend = teams.reduce((sum, team) => sum + team.spendUsedAed, 0);
   const teamsAtBudgetRisk = teams.filter((team) => percent(team.spendUsedAed, team.spendBudgetAed) >= 70).length;
 
   return (
@@ -47,33 +36,31 @@ export default function DashboardPage() {
       <PageHeader
         eyebrow="Command Center"
         title="AI operations command center"
-        description="One view for application health, infrastructure pressure, provider risk, spend forecast, and team budget action."
+        description="Live health, spend, capacity, routing, and team usage for governed AI applications."
       />
 
-      <section className="overview-hero">
-        <div className="hero-main">
-          <div className="hero-status-row">
-            <StatusBadge value="Warning" />
-            <span>AI Ops Status</span>
-          </div>
-          <h3>Operational, with 3 items needing action.</h3>
-          <p>Legal Sandbox is offline, Claims GPU is above safe range, and the external provider fallback should stay active until latency normalizes.</p>
-          <div className="hero-actions">
-            <ButtonLink href="/dashboard/operations">Open incidents</ButtonLink>
-            <ButtonLink href="/dashboard/safeguards" secondary>Review routing</ButtonLink>
-          </div>
+      <section className="overview-status-strip">
+        <div>
+          <span className="metric-label">AI Ops Status</span>
+          <h3>Warning: 3 items need attention</h3>
+          <p>Legal Sandbox is offline, Claims GPU is at 92%, external fallback is active, and {teamsAtBudgetRisk} teams are near budget watch.</p>
         </div>
-        <div className="hero-stat-grid">
-          <HeroStat label="Infrastructure" value={`${onlineTargets}/${infrastructureTargets.length}`} detail="agents online" />
-          <HeroStat label="Applications" value={`${liveApps}/${applications.length}`} detail="live" />
-          <HeroStat label="Requests" value={formatNumber(monthlyRequests)} detail="this month" />
-          <HeroStat label="Cost" value={aed(projectedSpend)} detail="current period" />
-          <HeroStat label="Budget risk" value={`${teamsAtBudgetRisk} teams`} detail={`${percent(totalSpend, totalBudget)}% used`} />
-          <HeroStat label="GPU peak" value={`${peakGpu}%`} detail="Claims pressure" />
+        <div className="status-strip-actions">
+          <ButtonLink href="/dashboard/operations">Open incidents</ButtonLink>
+          <ButtonLink href="/dashboard/safeguards" secondary>Review routing</ButtonLink>
         </div>
       </section>
 
-      <section className="overview-command-grid">
+      <section className="overview-kpi-grid">
+        <SharpKpi label="AI applications" value={`${liveApps}/${applications.length}`} detail="live AnythingLLM instances" status="Warning" />
+        <SharpKpi label="Infrastructure" value={`${onlineTargets}/${infrastructureTargets.length}`} detail="agent-connected servers" status="Warning" />
+        <SharpKpi label="Active issues" value={String(operations.length)} detail="1 critical, 2 warnings" status="Critical" />
+        <SharpKpi label="Monthly requests" value={formatNumber(monthlyRequests)} detail="through governed chat URLs" status="Healthy" />
+        <SharpKpi label="Projected spend" value={aed(projectedSpend)} detail="current period usage" status="Warning" />
+        <SharpKpi label="GPU peak" value={`${peakGpu}%`} detail="Claims node pressure" status="Critical" />
+      </section>
+
+      <section className="overview-command-grid core-grid">
         <Card className="overview-panel">
           <div className="card-header">
             <div>
@@ -99,7 +86,7 @@ export default function DashboardPage() {
           <div className="card-header">
             <div>
               <h3>Immediate attention</h3>
-              <p className="muted">The work that should be handled first.</p>
+              <p className="muted">Current incidents and operational actions.</p>
             </div>
             <ButtonLink href="/dashboard/operations" secondary>View all</ButtonLink>
           </div>
@@ -109,7 +96,7 @@ export default function DashboardPage() {
                 <StatusBadge value={item.severity} />
                 <div>
                   <strong>{item.title}</strong>
-                  <span>{item.action}</span>
+                  <span>{item.affected} - {item.action}</span>
                 </div>
               </Link>
             ))}
@@ -119,34 +106,23 @@ export default function DashboardPage() {
         <Card className="overview-panel">
           <div className="card-header">
             <div>
-              <h3>Recommended changes</h3>
-              <p className="muted">Focused adjustments with clear impact.</p>
+              <h3>Application availability</h3>
+              <p className="muted">Employee chat URLs and deployment state.</p>
             </div>
+            <ButtonLink href="/dashboard/applications" secondary>Manage</ButtonLink>
           </div>
-          <div className="overview-list">
-            {recommendedChanges.map((item) => (
-              <Link className="change-row" href={item.href} key={item.change}>
+          <div className="stack compact-stack overview-card-body">
+            {applications.map((app) => (
+              <div className="app-row" key={app.id}>
                 <div>
-                  <div className="row" style={{ justifyContent: "flex-start" }}>
-                    <StatusBadge value={item.tone} />
-                    <strong>{item.change}</strong>
-                  </div>
-                  <span>{item.area} - {item.impact}</span>
+                  <Link href={`/dashboard/applications/${app.id}`}><strong>{app.name}</strong></Link>
+                  <span>{app.url.replace("https://", "")}</span>
                 </div>
-                <span className="review-link">Review</span>
-              </Link>
+                <StatusBadge value={app.status} />
+              </div>
             ))}
           </div>
         </Card>
-      </section>
-
-      <section className="compact-kpi-strip">
-        <CompactKpi label="Active users" value={formatNumber(activeUsers)} detail="+12% vs last period" status="Healthy" />
-        <CompactKpi label="Avg latency" value={`${avgLatency} ms`} detail="limit 1,200 ms" status="Healthy" />
-        <CompactKpi label="Monthly requests" value={formatNumber(monthlyRequests)} detail="governed URLs" status="Healthy" />
-        <CompactKpi label="Projected spend" value={aed(projectedSpend)} detail="budget watch" status="Warning" />
-        <CompactKpi label="Models available" value={String(modelCatalog.filter((model) => model.status === "Running" || model.status === "Connected").length)} detail="catalog ready" status="Healthy" />
-        <CompactKpi label="Savings opportunity" value={aed(42000)} detail="cache and local routing" status="Healthy" />
       </section>
 
       <section className="overview-support-grid finance-grid">
@@ -233,24 +209,6 @@ export default function DashboardPage() {
       <section className="overview-support-grid two-plus-one">
         <Card pad>
           <div className="row">
-            <h3>Application availability</h3>
-            <ButtonLink href="/dashboard/applications" secondary>Manage</ButtonLink>
-          </div>
-          <div className="stack compact-stack">
-            {applications.map((app) => (
-              <div className="app-row" key={app.id}>
-                <div>
-                  <Link href={`/dashboard/applications/${app.id}`}><strong>{app.name}</strong></Link>
-                  <span>{app.url.replace("https://", "")}</span>
-                </div>
-                <StatusBadge value={app.status} />
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card pad>
-          <div className="row">
             <h3>Cost by model</h3>
             <ButtonLink href="/dashboard/model-catalog" secondary>Open catalog</ButtonLink>
           </div>
@@ -266,11 +224,32 @@ export default function DashboardPage() {
             ))}
           </div>
         </Card>
+
+        <Card pad>
+          <div className="row">
+            <h3>Routing posture</h3>
+            <ButtonLink href="/dashboard/safeguards" secondary>Policies</ButtonLink>
+          </div>
+          <div className="model-spend-list">
+            <div className="spend-row">
+              <div className="row"><strong>Legal restricted knowledge</strong><StatusBadge value="Warning" /></div>
+              <p className="muted">Local-first routing active; Legal Sandbox must reconnect before Live.</p>
+            </div>
+            <div className="spend-row">
+              <div className="row"><strong>Claims external routing</strong><StatusBadge value="Healthy" /></div>
+              <p className="muted">External providers are blocked for confidential claims workflows.</p>
+            </div>
+            <div className="spend-row">
+              <div className="row"><strong>Support cost ladder</strong><StatusBadge value="Healthy" /></div>
+              <p className="muted">FAQ traffic can move to local models and cache.</p>
+            </div>
+          </div>
+        </Card>
       </section>
 
       <section className="tip-strip">
         <div>
-          <strong>Your AI spend can become owned capacity over time.</strong>
+          <strong>Owned AI capacity signal</strong>
           <span>Support and claims traffic show the strongest local-model graduation fit.</span>
         </div>
         <ButtonLink href="/dashboard/cost-capacity" secondary>Review cost and capacity</ButtonLink>
@@ -279,19 +258,9 @@ export default function DashboardPage() {
   );
 }
 
-function HeroStat({ label, value, detail }: { label: string; value: string; detail: string }) {
+function SharpKpi({ label, value, detail, status }: { label: string; value: string; detail: string; status: string }) {
   return (
-    <div className="hero-stat">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{detail}</small>
-    </div>
-  );
-}
-
-function CompactKpi({ label, value, detail, status }: { label: string; value: string; detail: string; status: string }) {
-  return (
-    <Card pad className="compact-kpi">
+    <Card pad className="sharp-kpi">
       <div className="row">
         <span className="metric-label">{label}</span>
         <StatusBadge value={status} />
