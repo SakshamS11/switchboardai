@@ -23,6 +23,7 @@ const initialKnowledgeAccess: Record<string, string[]> = {
 export default function TeamsPage() {
   const [modelAccess, setModelAccess] = useState(initialModelAccess);
   const [knowledgeAccess, setKnowledgeAccess] = useState(initialKnowledgeAccess);
+  const [selectedTeam, setSelectedTeam] = useState(teams[0].name);
   const activeModels = useMemo(() => modelCatalog.filter((model) => model.status === "Running" || model.status === "Connected"), []);
   const accessChanges = Object.values(modelAccess).flat().length + Object.values(knowledgeAccess).flat().length;
 
@@ -61,63 +62,29 @@ export default function TeamsPage() {
         ))}
       </div>
 
-      <div className="grid two access-grid" style={{ marginTop: 18 }}>
-        <AccessMatrix
-          title="Model Access"
-          description="Changes here control which models each team can use across assigned applications and agents."
-          teams={teams.map((team) => team.name)}
-          columns={activeModels.map((model) => model.name)}
-          values={modelAccess}
-          onToggle={(teamName, modelName) => toggleAccess("model", teamName, modelName)}
-        />
-        <AccessMatrix
-          title="Knowledge Access"
-          description="Users can retrieve only from knowledge bases allowed for their team and application."
-          teams={teams.map((team) => team.name)}
-          columns={knowledgeBases.map((kb) => kb.name)}
-          values={knowledgeAccess}
-          onToggle={(teamName, kbName) => toggleAccess("knowledge", teamName, kbName)}
-        />
-      </div>
-
-      <Card pad style={{ marginTop: 18 }}>
-        <div className="row">
-          <div>
-            <h3>Access policy changes</h3>
-            <p className="muted">Updates are recorded against the team, model, knowledge source, and acting administrator.</p>
+      <div className="control-panel" style={{ marginTop: 18 }}>
+        <Card pad>
+          <h3>Team selector</h3>
+          <p className="muted">Choose one team, then adjust its model and knowledge access.</p>
+          <div className="selector-list">
+            {teams.map((team) => <button className={`selector-item ${selectedTeam === team.name ? "active" : ""}`} type="button" key={team.id} onClick={() => setSelectedTeam(team.name)}>{team.name}<br /><small>{team.users} users - {team.owner}</small></button>)}
           </div>
-          <ActionButton action="Saved team access policy changes" target="Teams & Access" type="Permission">Save access changes</ActionButton>
-        </div>
-      </Card>
+        </Card>
+        <Card pad>
+          <div className="row"><div><h3>{selectedTeam} access</h3><p className="muted">Controls apply across assigned applications, agents, and API routes.</p></div><StatusBadge value={teams.find((team) => team.name === selectedTeam)?.risk ?? "Healthy"} /></div>
+          <h3 style={{ marginTop: 18 }}>Allowed models</h3>
+          <div className="control-list">{activeModels.map((model) => <AccessRow key={model.id} label={model.name} detail={`${model.hosting} - ${model.sensitivityFit}`} active={(modelAccess[selectedTeam] ?? []).includes(model.name)} onToggle={() => toggleAccess("model", selectedTeam, model.name)} />)}</div>
+          <h3 style={{ marginTop: 18 }}>Knowledge access</h3>
+          <div className="control-list">{knowledgeBases.map((kb) => <AccessRow key={kb.id} label={kb.name} detail={`${kb.source} - ${kb.sensitivity}`} active={(knowledgeAccess[selectedTeam] ?? []).includes(kb.name)} onToggle={() => toggleAccess("knowledge", selectedTeam, kb.name)} />)}</div>
+          <div className="row" style={{ marginTop: 16, justifyContent: "flex-end" }}>
+            <ActionButton action={`Saved access policy for ${selectedTeam}`} target="Teams & Access" type="Permission">Save access changes</ActionButton>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }
 
-function AccessMatrix({ title, description, teams, columns, values, onToggle }: { title: string; description: string; teams: string[]; columns: string[]; values: Record<string, string[]>; onToggle: (teamName: string, itemName: string) => void }) {
-  return (
-    <Card>
-      <div className="card-header">
-        <div>
-          <h3>{title}</h3>
-          <p className="muted">{description}</p>
-        </div>
-      </div>
-      <div className="table-wrap">
-        <table className="access-table">
-          <thead><tr><th>Team</th>{columns.map((column) => <th key={column}>{column}</th>)}</tr></thead>
-          <tbody>
-            {teams.map((teamName) => (
-              <tr key={teamName}>
-                <td><strong>{teamName}</strong></td>
-                {columns.map((column) => {
-                  const active = (values[teamName] ?? []).includes(column);
-                  return <td key={column}><button type="button" className={`toggle ${active ? "on" : ""}`} onClick={() => onToggle(teamName, column)} aria-pressed={active}>{active ? "Allowed" : "Blocked"}</button></td>;
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </Card>
-  );
+function AccessRow({ label, detail, active, onToggle }: { label: string; detail: string; active: boolean; onToggle: () => void }) {
+  return <div className="control-row"><div><strong>{label}</strong><small>{detail}</small></div><button type="button" className={`toggle ${active ? "on" : ""}`} onClick={onToggle}>{active ? "Allowed" : "Blocked"}</button></div>;
 }

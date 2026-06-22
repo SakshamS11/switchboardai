@@ -67,15 +67,6 @@ export default function ApplicationsPage() {
         <div className="table-wrap"><table><thead><tr><th>Application</th><th>Team</th><th>Chat URL</th><th>Status</th><th>Models</th><th>Budget</th><th>Action</th></tr></thead><tbody>{applications.map((app) => <tr key={app.id}><td><strong>{app.name}</strong><br /><span className="muted">{app.chatEngine} - {app.purpose}</span></td><td>{app.team}</td><td>{app.status === "Live" ? <a className="muted" href={app.url} target="_blank" rel="noreferrer">{app.url.replace("https://", "")}</a> : <span className="muted">{app.url.replace("https://", "")} pending</span>}</td><td><StatusBadge value={app.status} /></td><td>{app.allowedModels.length}</td><td><Progress value={percent(app.tokensUsed, app.tokenBudget)} /></td><td><Link className="button secondary" href={`/dashboard/applications/${app.id}`}>Manage</Link></td></tr>)}</tbody></table></div>
       </Card>
       {lastCreated ? <Card pad style={{ marginTop: 18 }}><div className="row"><div><h3>Deployment request created</h3><p className="muted">{lastCreated}</p></div><ButtonLink href="/dashboard/operations" secondary>View operation queue</ButtonLink></div></Card> : null}
-      <Card pad style={{ marginTop: 18 }}>
-        <h3>Configuration sources</h3>
-        <p className="muted">Allowed options come from governed catalog objects.</p>
-        <div className="grid three">
-          <Field label="Active models" value={activeModels.map((m) => m.name).join(", ")} />
-          <Field label="Knowledge bases" value={knowledgeBases.map((kb) => kb.name).join(", ")} />
-          <Field label="Teams" value={teams.map((item) => item.name).join(", ")} />
-        </div>
-      </Card>
       {createOpen ? (
         <div className="modal-backdrop" role="presentation">
           <section className="modal" role="dialog" aria-modal="true" aria-labelledby="create-application-title">

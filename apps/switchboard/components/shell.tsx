@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { organization } from "@/lib/mock-data";
 import { StatusBadge } from "./ui";
@@ -16,19 +17,36 @@ const nav = [
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(window.localStorage.getItem("switchboard-sidebar-collapsed") === "true");
+  }, []);
+
+  function toggleSidebar() {
+    setCollapsed((current) => {
+      const next = !current;
+      window.localStorage.setItem("switchboard-sidebar-collapsed", String(next));
+      return next;
+    });
+  }
+
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""}`}>
       <aside className="sidebar">
-        <Link href="/dashboard" className="brand">
-          <span className="brand-mark" aria-hidden="true" />
-          <span><h1>Switchboard AI</h1><p>AI application control plane</p></span>
-        </Link>
+        <div className="brand-row">
+          <Link href="/dashboard" className="brand">
+            <span className="brand-mark" aria-hidden="true" />
+            <span className="brand-copy"><h1>Switchboard AI</h1><p>AI application control plane</p></span>
+          </Link>
+          <button className="sidebar-toggle" type="button" onClick={toggleSidebar} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>{collapsed ? ">" : "<"}</button>
+        </div>
         {nav.map((section) => (
           <nav className="nav-section" key={section.group} aria-label={section.group}>
             <div className="nav-label">{section.group}</div>
             {section.items.map((item) => {
               const active = item.href === "/dashboard" ? pathname === item.href : pathname.startsWith(item.href);
-              return <Link key={item.href} href={item.href} className={`nav-link ${active ? "active" : ""}`}>{item.label}</Link>;
+              return <Link key={item.href} href={item.href} className={`nav-link ${active ? "active" : ""}`} title={item.label}><span>{item.label}</span></Link>;
             })}
           </nav>
         ))}
