@@ -1,6 +1,25 @@
-export type Status = "Healthy" | "Warning" | "Critical" | "Offline" | "Draft" | "Deploying" | "Live" | "Disabled" | "Connected" | "Running" | "Failed" | "Success" | "Pending";
+export type Status = "Healthy" | "Warning" | "Critical" | "Offline" | "Draft" | "Deploying" | "Live" | "Disabled" | "Connected" | "Running" | "Failed" | "Success" | "Pending" | "Active" | "Paused";
 
 export type Sensitivity = "General" | "Internal" | "Confidential" | "Restricted";
+
+export type OrganizationSettings = {
+  name: string;
+  domain: string;
+  region: string;
+  aiOpsStatus: "Healthy" | "Warning" | "Critical";
+  environment: string;
+  auditRetention: string;
+  notificationChannel: string;
+  evidenceReadiness: number;
+  thresholds: {
+    gpuWarning: number;
+    gpuCritical: number;
+    latencyWarningMs: number;
+    costWarningPercent: number;
+  };
+  integrationStatus: "Untested" | "Testing" | "Connected" | "Failed";
+  integrationLastTest: string;
+};
 
 export type AIApplication = {
   id: string;
@@ -11,7 +30,7 @@ export type AIApplication = {
   url: string;
   status: "Draft" | "Deploying" | "Live" | "Disabled" | "Failed";
   targetServerId: string;
-  chatEngine: "AnythingLLM";
+  chatEngine: "Managed workspace chat";
   allowedModels: string[];
   knowledgeBases: string[];
   agents: string[];
@@ -121,7 +140,7 @@ export type ModelRecord = {
   provider: string;
   runtime: "Ollama" | "vLLM" | "External API";
   hosting: "Customer server" | "External provider";
-  status: "Running" | "Connected" | "Warning";
+  status: "Untested" | "Testing" | "Running" | "Connected" | "Warning" | "Failed";
   sensitivityFit: Sensitivity;
   target: string;
   inputCostAed: number;
@@ -141,6 +160,8 @@ export type RoutingPolicy = {
   blocked: string;
   status: Status;
   version: string;
+  active?: boolean;
+  outcome?: string;
 };
 
 export type KnowledgeBase = {
@@ -148,7 +169,7 @@ export type KnowledgeBase = {
   name: string;
   source: "Upload" | "SharePoint" | "Google Drive" | "S3";
   documents: number;
-  status: "Indexed" | "Syncing" | "Warning";
+  status: "Indexed" | "Syncing" | "Warning" | "Failed";
   sensitivity: Sensitivity;
   assignedApps: string[];
   assignedTeams: string[];
@@ -165,8 +186,10 @@ export type GovernedAgent = {
   approvalRule: string;
   externalModelRule: "Allowed" | "Restricted" | "Blocked";
   budgetAed: number;
-  status: Status;
-  killSwitch: "Armed" | "Ready";
+  status: "Active" | "Paused";
+  killSwitch: "Armed" | "Not armed";
+  monthlyTokenLimit?: number;
+  monthlySpendLimitAed?: number;
 };
 
 export type Team = {
@@ -180,6 +203,49 @@ export type Team = {
   spendBudgetAed: number;
   spendUsedAed: number;
   risk: Status;
+  hardLimit?: boolean;
+  governanceOwner?: string;
+};
+
+export type TeamMember = {
+  id: string;
+  email: string;
+  name: string;
+  teamId: string;
+  role: "Member" | "Team Admin" | "Viewer";
+  clearance: Sensitivity;
+  tokenLimit: number;
+  tokensUsed: number;
+};
+
+export type InvitationRecord = {
+  id: string;
+  email: string;
+  teamId: string;
+  role: "Member" | "Team Admin" | "Viewer";
+  invitedAt: string;
+  expiresIn: string;
+  status: "Pending" | "Accepted" | "Expired" | "Revoked";
+};
+
+export type AccessState = {
+  modelGrants: Record<string, string[]>;
+  knowledgeGrants: Record<string, string[]>;
+  agentGrants: Record<string, string[]>;
+  workspaceGrants: Record<string, string[]>;
+};
+
+export type AgentApproval = {
+  id: string;
+  agentId: string;
+  requestedAction: string;
+  payloadSummary: string;
+  requestingRun: string;
+  risk: "Low" | "Medium" | "High";
+  approver: string;
+  createdAt: string;
+  expiresIn: string;
+  status: "Pending" | "Approved" | "Rejected" | "Expired";
 };
 
 export type AuditEvent = {

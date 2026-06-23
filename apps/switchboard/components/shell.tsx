@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
-import { organization } from "@/lib/mock-data";
+import { useAppState } from "@/components/app-state";
 import { StatusBadge } from "./ui";
 
 const nav = [
@@ -48,13 +48,14 @@ const commands = [
   { label: "Open Models & Providers", description: "Manage local and external models", href: "/dashboard/model-catalog" },
   { label: "Open Routing Policies", description: "Control data boundaries and fallbacks", href: "/dashboard/safeguards" },
   { label: "Open Teams", description: "Manage users, roles and effective access", href: "/dashboard/teams" },
-  { label: "Open Audit Logs", description: "Review simulated control-plane events", href: "/dashboard/audit" },
+  { label: "Open Audit Logs", description: "Review current control-plane events", href: "/dashboard/audit" },
   { label: "Open Documentation", description: "Read product workflows and manual guidance", href: "/dashboard/documentation" }
 ];
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { organizationSettings } = useAppState();
   const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState("");
   const [commandOpen, setCommandOpen] = useState(false);
@@ -159,7 +160,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       </aside>
       <main className="main">
         <header className="topbar">
-          <div className="topbar-left"><strong>{organization.name}</strong><span className="environment-pill">Sandbox</span></div>
+          <div className="topbar-left"><strong>{organizationSettings.name}</strong><span className="environment-pill">{organizationSettings.environment}</span></div>
           <div className="command-shell" ref={commandRef}>
             <label className="command" htmlFor="global-command" role="combobox" aria-expanded={commandOpen} aria-controls="global-command-menu" aria-haspopup="listbox">
               <Search size={15} aria-hidden="true" />
@@ -186,7 +187,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               </div>
             ) : null}
           </div>
-          <div className="topbar-actions"><StatusBadge value={`AI Ops: ${organization.aiOpsStatus}`} /><Link className="icon-button" href="/dashboard/operations" aria-label="Open alerts"><Bell size={16} /><span>3</span></Link><Link className="icon-button" href="/dashboard/documentation" aria-label="Open documentation"><HelpCircle size={17} /></Link></div>
+          <div className="topbar-actions"><StatusBadge value={`AI Ops: ${organizationSettings.aiOpsStatus}`} /><Link className="icon-button" href="/dashboard/operations" aria-label="Open alerts"><Bell size={16} /><span>3</span></Link><Link className="icon-button" href="/dashboard/documentation" aria-label="Open documentation"><HelpCircle size={17} /></Link></div>
         </header>
         {children}
       </main>

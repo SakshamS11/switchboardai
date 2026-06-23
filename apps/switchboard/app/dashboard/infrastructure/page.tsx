@@ -12,7 +12,7 @@ export default function InfrastructurePage() {
   const [serverName, setServerName] = useState("Finance GPU Node");
   const [serverType, setServerType] = useState("On-prem GPU");
   const [region, setRegion] = useState("Dubai Office");
-  const [environment, setEnvironment] = useState("Sandbox");
+  const [environment, setEnvironment] = useState("Production");
   const [commandGenerated, setCommandGenerated] = useState(false);
   const [connectionState, setConnectionState] = useState("Not checked");
   const [createdServerId, setCreatedServerId] = useState("");
@@ -21,6 +21,7 @@ export default function InfrastructurePage() {
   const [regionFilter, setRegionFilter] = useState("All");
   const [stackFilter, setStackFilter] = useState("All");
   const [agentFilter, setAgentFilter] = useState("All");
+  const [actionMessage, setActionMessage] = useState("");
 
   const online = servers.filter((server) => server.agent === "Online").length;
   const attention = servers.filter((server) => deriveHealth(server).status !== "Healthy").length;
@@ -44,7 +45,20 @@ export default function InfrastructurePage() {
 
   function copyCommand() {
     navigator.clipboard?.writeText(installCommand);
+    setConnectionState("Command copied. Waiting for agent heartbeat.");
+    setActionMessage("Install command copied. Run it on the server, then check connection.");
     recordAudit("Copied server install command", serverName, "Infrastructure");
+  }
+
+  function fetchLogs(serverNameValue: string) {
+    setActionMessage(`Log request queued for ${serverNameValue}. Results would stream here once backend log collection is connected.`);
+    recordAudit("Fetched server logs", serverNameValue, "Infrastructure");
+  }
+
+  function confirmRestart(serverId: string, serverNameValue: string) {
+    if (!window.confirm(`Restart the Switchboard agent on ${serverNameValue}? This updates local state and records an audit event for this browser session.`)) return;
+    setActionMessage(`Restart requested for ${serverNameValue}. Agent state will update when the local workflow completes.`);
+    restartServerAgent(serverId);
   }
 
   function checkConnection() {
@@ -88,6 +102,8 @@ export default function InfrastructurePage() {
         <select className="field" value={agentFilter} onChange={(event) => setAgentFilter(event.target.value)} aria-label="Agent state filter"><option>All</option><option>Online</option><option>Restarting</option><option>Offline</option><option>Waiting for agent</option><option>Failed</option></select>
       </section>
 
+      {actionMessage ? <div className="callout" role="status">{actionMessage}</div> : null}
+
       <Card>
         <div className="card-header"><div><h3>Server fleet</h3><p className="muted">Rows open detail pages. Capacity combines GPU model, VRAM and current load.</p></div></div>
         <div className="table-wrap"><table><thead><tr><th>Server</th><th>Runtime / stack</th><th>Capacity</th><th>Agent</th><th>Health</th><th>Last seen</th><th>Actions</th></tr></thead><tbody>
@@ -98,11 +114,11 @@ export default function InfrastructurePage() {
               <tr key={server.id} className="clickable-row">
                 <td><Link href={`/dashboard/infrastructure/${server.id}`}><strong>{server.name}</strong><br /><span className="muted">{server.type} - {server.region}</span></Link></td>
                 <td>{server.stack}</td>
-                <td>{server.gpu} · {server.vramTotal ? `${server.vramUsed}/${server.vramTotal} GB VRAM` : "No GPU"} · {server.gpuLoad}% load</td>
+                <td>{server.gpu} - {server.vramTotal ? `${server.vramUsed}/${server.vramTotal} GB VRAM` : "No GPU"} - {server.gpuLoad}% load</td>
                 <td><StatusBadge value={server.agent} /></td>
                 <td><StatusBadge value={health.status} /> <span className="muted">{health.reason}{relatedIncidents ? `; ${relatedIncidents} incident` : ""}</span></td>
                 <td>{server.heartbeat}</td>
-                <td><details className="row-menu"><summary>Actions</summary><div><Link href={`/dashboard/infrastructure/${server.id}`}>Open details</Link><Link href={`/dashboard/stacks?server=${server.id}`}>Deploy stack</Link><button type="button" onClick={() => recordAudit("Fetched server logs", server.name, "Infrastructure")}>Get logs</button><button type="button" onClick={() => restartServerAgent(server.id)}>Restart agent</button></div></details></td>
+                <td><details className="row-menu"><summary>Actions</summary><div><Link href={`/dashboard/infrastructure/${server.id}`}>Open details</Link><Link href={`/dashboard/stacks?server=${server.id}`}>Deploy stack</Link><button type="button" onClick={() => fetchLogs(server.name)}>Get logs</button><button type="button" onClick={() => confirmRestart(server.id, server.name)}>Restart agent</button></div></details></td>
               </tr>
             );
           })}
@@ -118,7 +134,7 @@ export default function InfrastructurePage() {
                 <label className="field-group"><span className="metric-label">Server name</span><input className="field" value={serverName} onChange={(event) => setServerName(event.target.value)} required /></label>
                 <label className="field-group"><span className="metric-label">Infrastructure type</span><select className="field" value={serverType} onChange={(event) => setServerType(event.target.value)}><option>On-prem GPU</option><option>Azure VM</option><option>AWS EC2</option><option>Workstation</option></select></label>
                 <label className="field-group"><span className="metric-label">Region</span><input className="field" value={region} onChange={(event) => setRegion(event.target.value)} required /></label>
-                <label className="field-group"><span className="metric-label">Environment label</span><select className="field" value={environment} onChange={(event) => setEnvironment(event.target.value)}><option>Sandbox</option><option>Production</option><option>Development</option></select></label>
+                <label className="field-group"><span className="metric-label">Environment label</span><select className="field" value={environment} onChange={(event) => setEnvironment(event.target.value)}><option>Production</option><option>Pilot</option><option>Development</option></select></label>
               </div> : null}
               {step === 2 ? <div className="stack">
                 <div className="callout">Token expires in 15 minutes. Minimum requirements: Ubuntu 22.04, Docker, outbound HTTPS, and optional NVIDIA drivers.</div>

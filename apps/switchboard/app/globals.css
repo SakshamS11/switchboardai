@@ -15,8 +15,8 @@
   --status-critical: #e11d48;
   --status-offline: #64748b;
   --shadow-card: 0 8px 22px rgba(17, 24, 39, 0.06);
-  --font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: var(--font-geist-mono), "SFMono-Regular", Consolas, monospace;
+  --font-sans: "Segoe UI", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 * { box-sizing: border-box; }
@@ -682,5 +682,131 @@ tr:hover td { background: rgba(238,241,246,.55); }
   .overview-kpis-compact { grid-template-columns: 1fr; }
   .attention-row { grid-template-columns: 1fr; }
   .compact-action { width: 100%; }
+}
+
+/* Final enterprise UX pass: prevent overflow, keep interactions stable, and polish settings. */
+html, body { max-width: 100%; overflow-x: hidden; }
+.page, .main { max-width: 100%; overflow-x: hidden; }
+.button:hover, .icon-button:hover, .nav-link:hover, .table-action:hover, .text-link:hover { transform: none !important; }
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 3px solid rgba(91, 61, 255, .28);
+  outline-offset: 2px;
+}
+.table-wrap { max-width: 100%; overflow-x: auto; }
+.filter-toolbar { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); align-items: center; }
+.row-menu div { min-width: 172px; }
+.row-menu button, .row-menu a { min-height: 34px; }
+.ops-page .overview-chart,
+.ops-page .overview-chart.fixed-chart {
+  height: 260px;
+  min-height: 260px;
+  max-height: 260px;
+}
+
+.settings-page { padding-bottom: 92px; }
+.settings-shell {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.settings-tabs {
+  position: sticky;
+  top: 86px;
+  display: grid;
+  gap: 8px;
+}
+.settings-tabs button {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text-primary);
+  text-align: left;
+  padding: 13px 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  font-weight: 760;
+}
+.settings-tabs button span {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 520;
+}
+.settings-tabs button.active {
+  border-color: rgba(91, 61, 255, .35);
+  background: rgba(91, 61, 255, .07);
+  color: var(--brand-primary-dark);
+}
+.settings-panel { min-height: 430px; }
+.settings-section { display: grid; gap: 18px; }
+.settings-result {
+  display: grid;
+  gap: 4px;
+  min-height: 78px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--surface-muted);
+}
+.settings-result small { color: var(--text-secondary); }
+.sticky-save-bar {
+  position: fixed;
+  left: calc(var(--sidebar-width, 280px) + 24px);
+  right: 24px;
+  bottom: 18px;
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 62px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 18px 52px rgba(17, 24, 39, .16);
+  transform: translateY(120%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.sidebar-collapsed .sticky-save-bar { left: calc(var(--sidebar-collapsed-width, 84px) + 24px); }
+.sticky-save-bar.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.sticky-save-bar div { display: flex; gap: 10px; }
+.button.danger {
+  background: rgba(225, 29, 72, .08);
+  border-color: rgba(225, 29, 72, .26);
+  color: var(--status-critical);
+}
+
+@media (max-width: 1500px) {
+  .overview-command-row { grid-template-columns: 1fr; }
+  .attention-row { grid-template-columns: 86px minmax(180px, .85fr) minmax(220px, 1fr) 110px minmax(118px, auto); gap: 10px; }
+}
+
+@media (max-width: 900px) {
+  .settings-shell { grid-template-columns: 1fr; }
+  .settings-tabs { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sticky-save-bar, .sidebar-collapsed .sticky-save-bar { left: 12px; right: 12px; bottom: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+  }
 }
 

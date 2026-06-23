@@ -80,7 +80,7 @@ export default function OperationsPage() {
 
   function runMitigation() {
     if (!selected) return;
-    if (!window.confirm(`Run mitigation for ${selected.title}? This frontend will simulate the recovery workflow and update shared state.`)) return;
+    if (!window.confirm(`Run mitigation for ${selected.title}? This updates the local control-plane state and records an audit event for this browser session.`)) return;
     mitigateIncident(selected.id);
   }
 

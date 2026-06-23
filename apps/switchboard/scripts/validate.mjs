@@ -33,7 +33,7 @@ if (missing.length) {
 }
 
 const mockData = readFileSync("lib/mock-data.ts", "utf8");
-for (const term of ["AIApplication", "AnythingLLM", "Sovereignty Router", "Falcon", "vLLM"]) {
+for (const term of ["AIApplication", "Managed workspace chat", "Sovereignty Router", "Falcon", "vLLM"]) {
   if (!mockData.includes(term)) {
     console.error(`Missing product term in mock data: ${term}`);
     process.exit(1);

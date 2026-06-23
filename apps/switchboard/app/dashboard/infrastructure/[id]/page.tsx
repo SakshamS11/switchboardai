@@ -18,6 +18,7 @@ export default function ServerDetailPage({ params }: { params: Promise<{ id: str
   const { id } = use(params);
   const { servers, incidents, applications, stackDeployments, restartServerAgent, recordAudit } = useAppState();
   const [metric, setMetric] = useState<"CPU" | "RAM" | "GPU" | "VRAM">("GPU");
+  const [actionMessage, setActionMessage] = useState("");
   const server = servers.find((item) => item.id === id);
   if (!server) return <div className="page"><Card pad><h2>Server not found</h2><p className="muted">Return to Servers and select an active server.</p><Link className="button secondary" href="/dashboard/infrastructure">Back to servers</Link></Card></div>;
   const relatedIncidents = incidents.filter((incident) => incident.serverId === server.id && incident.status !== "Resolved");
@@ -26,7 +27,17 @@ export default function ServerDetailPage({ params }: { params: Promise<{ id: str
   const services = deployments[0]?.services ?? ["Agent"];
 
   function restart() {
-    if (window.confirm(`Restart the agent on ${server.name}? Telemetry may pause briefly.`)) restartServerAgent(server.id);
+    if (!server) return;
+    if (window.confirm(`Restart the agent on ${server.name}? Telemetry may pause briefly.`)) {
+      setActionMessage(`Restart requested for ${server.name}. Agent state will update when the local workflow completes.`);
+      restartServerAgent(server.id);
+    }
+  }
+
+  function fetchLogs() {
+    if (!server) return;
+    setActionMessage(`Log request queued for ${server.name}. Backend log streaming is required for live log output.`);
+    recordAudit("Fetched server logs", server.name, "Infrastructure");
   }
 
   return (
@@ -62,9 +73,10 @@ export default function ServerDetailPage({ params }: { params: Promise<{ id: str
           <div className="exception-list">
             <Link className="exception-row" href={`/dashboard/stacks?server=${server.id}`}><div><strong>Deploy stack</strong><span>Select an approved runtime template.</span></div><span className="table-action">Open</span></Link>
             <button className="exception-row button-row" type="button" onClick={restart}><div><strong>Restart agent</strong><span>Temporarily pauses telemetry.</span></div><span className="table-action">Restart</span></button>
-            <button className="exception-row button-row" type="button" onClick={() => recordAudit("Fetched server logs", server.name, "Infrastructure")}><div><strong>Get logs</strong><span>Records a log retrieval request.</span></div><span className="table-action">Fetch</span></button>
+            <button className="exception-row button-row" type="button" onClick={fetchLogs}><div><strong>Get logs</strong><span>Records a log retrieval request.</span></div><span className="table-action">Fetch</span></button>
             <button className="exception-row button-row" type="button" onClick={() => window.confirm(`Roll back latest deployment on ${server.name}?`) && recordAudit("Rolled back deployment", server.name, "Deployment")}><div><strong>Roll back deployment</strong><span>Available for previous stack versions.</span></div><span className="table-action">Roll back</span></button>
           </div>
+          {actionMessage ? <div className="callout" role="status" style={{ marginTop: 14 }}>{actionMessage}</div> : null}
         </Card>
       </section>
 

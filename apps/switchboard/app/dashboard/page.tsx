@@ -16,7 +16,6 @@ import {
 } from "recharts";
 import { useAppState } from "@/components/app-state";
 import { Card } from "@/components/ui";
-import { organization } from "@/lib/mock-data";
 import { aed, formatNumber, percent } from "@/lib/utils";
 
 type Range = "7d" | "30d";
@@ -192,7 +191,7 @@ export default function DashboardPage() {
             <ContextRow label="Services" value={`${servicesHealthy} of ${servicesTotal} healthy`} href="/dashboard/operations" action="View services" state="neutral" />
             <ContextRow label="External providers" value={degradedProvider ? `${degradedProvider.provider} latency degraded` : "All external providers connected"} href="/dashboard/safeguards" action="Review routing" state={degradedProvider ? "attention" : "healthy"} />
             <ContextRow label="Policy enforcement" value={protectedPolicy ? "Restricted routes protected" : "Policy review needed"} href="/dashboard/safeguards" action="View policies" state={protectedPolicy ? "governed" : "attention"} />
-            <ContextRow label="Evidence readiness" value={`${organization.evidenceReadiness}% preparation coverage`} href="/dashboard/compliance" action="View readiness" state="neutral" />
+            <ContextRow label="Team budget owner" value={teamRisks[0] ? `${teamRisks[0].owner} should review spend` : "No owner escalation needed"} href="/dashboard/teams" action="View team" state={teamRisks[0] ? "attention" : "healthy"} />
           </div>
         </Card>
       </section>

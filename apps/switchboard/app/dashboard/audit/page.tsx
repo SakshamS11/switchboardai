@@ -26,9 +26,9 @@ export default function AuditPage() {
   return (
     <div className="page">
       <PageHeader eyebrow="Governance" title="Audit Logs" description="Searchable control-plane audit events for metadata, policy, budget and remote operations." action={<button className="button" onClick={exportAudit}>Export Audit</button>} />
-      <div className="callout">This frontend contains simulated append-only demo audit data. Production audit storage requires backend persistence and access controls.</div>
+      <div className="callout">This view records local control-plane events for the current browser session. Production audit immutability requires backend persistence and access controls.</div>
       <div className="grid kpis" style={{ marginTop: 18 }}>
-        <MetricCard label="Audit events" value={String(auditEvents.length)} detail="Current demo state" status="Healthy" />
+        <MetricCard label="Audit events" value={String(auditEvents.length)} detail="Current browser session" status="Healthy" />
         <MetricCard label="Event categories" value={String(types.length - 1)} detail="Application, command, policy and more" status="Healthy" />
         <MetricCard label="Pending outcomes" value={String(auditEvents.filter((event) => event.status === "Pending").length)} detail="Open control events" status="Warning" />
         <MetricCard label="Exportable" value="CSV" detail="Download filtered rows" status="Healthy" />

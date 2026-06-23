@@ -1,10 +1,11 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { accessState as seedAccessState, agentApprovals as seedAgentApprovals, agents as seedAgents, applications as seedApplications, auditEvents as seedAudit, incidents as seedIncidents, infrastructureTargets as seedServers, invitations as seedInvitations, knowledgeBases as seedKnowledgeBases, modelCatalog as seedModelCatalog, routingPolicies as seedRoutingPolicies, stackDeployments as seedStackDeployments, stackTemplates as seedStackTemplates, teamMembers as seedTeamMembers, teams as seedTeams } from "@/lib/mock-data";
-import type { AccessState, AgentApproval, AIApplication, AuditEvent, CreateApplicationInput, GovernedAgent, Incident, IncidentStatus, InfrastructureTarget, InvitationRecord, KnowledgeBase, ModelRecord, RoutingPolicy, StackDeployment, StackTemplate, Team, TeamMember } from "@/lib/types";
+import { accessState as seedAccessState, agentApprovals as seedAgentApprovals, agents as seedAgents, applications as seedApplications, auditEvents as seedAudit, incidents as seedIncidents, infrastructureTargets as seedServers, invitations as seedInvitations, knowledgeBases as seedKnowledgeBases, modelCatalog as seedModelCatalog, organization as seedOrganization, routingPolicies as seedRoutingPolicies, stackDeployments as seedStackDeployments, stackTemplates as seedStackTemplates, teamMembers as seedTeamMembers, teams as seedTeams } from "@/lib/mock-data";
+import type { AccessState, AgentApproval, AIApplication, AuditEvent, CreateApplicationInput, GovernedAgent, Incident, IncidentStatus, InfrastructureTarget, InvitationRecord, KnowledgeBase, ModelRecord, OrganizationSettings, RoutingPolicy, StackDeployment, StackTemplate, Team, TeamMember } from "@/lib/types";
 
 type AppContextValue = {
+  organizationSettings: OrganizationSettings;
   applications: AIApplication[];
   auditEvents: AuditEvent[];
   teams: Team[];
@@ -23,6 +24,8 @@ type AppContextValue = {
   isHydrated: boolean;
   toast: string | null;
   createApplication: (input: CreateApplicationInput) => AIApplication;
+  saveOrganizationSettings: (input: OrganizationSettings) => void;
+  testNotificationIntegration: () => void;
   publishApplication: (id: string) => void;
   redeployApplication: (id: string) => void;
   disableApplication: (id: string) => void;
@@ -64,7 +67,27 @@ export type AccessDrawerState = {
 
 const storageKey = "switchboard-ai-state-v3";
 
+const seededOrganizationSettings: OrganizationSettings = {
+  name: seedOrganization.name,
+  domain: seedOrganization.domain,
+  region: seedOrganization.region,
+  aiOpsStatus: seedOrganization.aiOpsStatus as OrganizationSettings["aiOpsStatus"],
+  environment: "Production",
+  auditRetention: "7 years",
+  notificationChannel: "Slack and email",
+  evidenceReadiness: seedOrganization.evidenceReadiness,
+  thresholds: {
+    gpuWarning: 85,
+    gpuCritical: 95,
+    latencyWarningMs: 1200,
+    costWarningPercent: 80
+  },
+  integrationStatus: "Connected",
+  integrationLastTest: "Today 09:30"
+};
+
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
+  const [organizationSettings, setOrganizationSettings] = useState<OrganizationSettings>(seededOrganizationSettings);
   const [applications, setApplications] = useState(seedApplications);
   const [auditEvents, setAuditEvents] = useState(seedAudit);
   const [teams, setTeams] = useState<Team[]>(seedTeams);
@@ -91,7 +114,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      const parsed = JSON.parse(raw) as { applications?: AIApplication[]; auditEvents?: AuditEvent[]; teams?: Team[]; teamMembers?: TeamMember[]; invitations?: InvitationRecord[]; accessState?: AccessState; modelCatalog?: ModelRecord[]; knowledgeBases?: KnowledgeBase[]; governedAgents?: GovernedAgent[]; routingPolicies?: RoutingPolicy[]; agentApprovals?: AgentApproval[]; incidents?: Incident[]; servers?: InfrastructureTarget[]; stackDeployments?: StackDeployment[] };
+      const parsed = JSON.parse(raw) as { organizationSettings?: OrganizationSettings; applications?: AIApplication[]; auditEvents?: AuditEvent[]; teams?: Team[]; teamMembers?: TeamMember[]; invitations?: InvitationRecord[]; accessState?: AccessState; modelCatalog?: ModelRecord[]; knowledgeBases?: KnowledgeBase[]; governedAgents?: GovernedAgent[]; routingPolicies?: RoutingPolicy[]; agentApprovals?: AgentApproval[]; incidents?: Incident[]; servers?: InfrastructureTarget[]; stackDeployments?: StackDeployment[] };
+      if (parsed.organizationSettings) setOrganizationSettings(parsed.organizationSettings);
       if (parsed.applications) setApplications(parsed.applications);
       if (parsed.auditEvents) setAuditEvents(parsed.auditEvents);
       if (parsed.teams) setTeams(parsed.teams);
@@ -114,8 +138,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(storageKey, JSON.stringify({ applications, auditEvents, teams, teamMembers, invitations, accessState, modelCatalog, knowledgeBases, governedAgents, routingPolicies, agentApprovals, incidents, servers, stackDeployments }));
-  }, [applications, auditEvents, teams, teamMembers, invitations, accessState, modelCatalog, knowledgeBases, governedAgents, routingPolicies, agentApprovals, incidents, servers, stackDeployments]);
+    window.localStorage.setItem(storageKey, JSON.stringify({ organizationSettings, applications, auditEvents, teams, teamMembers, invitations, accessState, modelCatalog, knowledgeBases, governedAgents, routingPolicies, agentApprovals, incidents, servers, stackDeployments }));
+  }, [organizationSettings, applications, auditEvents, teams, teamMembers, invitations, accessState, modelCatalog, knowledgeBases, governedAgents, routingPolicies, agentApprovals, incidents, servers, stackDeployments]);
 
   function showToast(message: string) {
     setToast(message);
@@ -138,6 +162,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   function simulateAction(action: string, target: string, type = "Configuration") {
     recordAudit(action, target, type);
     showToast(`${action}. Audit entry recorded.`);
+  }
+
+  function saveOrganizationSettings(input: OrganizationSettings) {
+    setOrganizationSettings(input);
+    recordAudit("Saved organization settings", input.name, "Configuration");
+    showToast("Settings saved for this browser session.");
+  }
+
+  function testNotificationIntegration() {
+    setOrganizationSettings((current) => ({ ...current, integrationStatus: "Testing" }));
+    recordAudit("Tested notification integration", organizationSettings.notificationChannel, "Configuration");
+    window.setTimeout(() => {
+      setOrganizationSettings((current) => ({ ...current, integrationStatus: "Connected", integrationLastTest: now() }));
+      showToast("Notification test completed. Settings state updated.");
+    }, 800);
   }
 
   function now() {
@@ -273,7 +312,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const invitation: InvitationRecord = { id: `invite-${Date.now()}`, email: input.email, teamId: input.teamId, role: input.role, invitedAt: "Just now", expiresIn: "72 hours", status: "Pending" };
     setInvitations((current) => [invitation, ...current]);
     recordAudit("Created invitation record", input.email, "Permission");
-    showToast("Invitation created in this demo environment.");
+    showToast("Invitation created for this workspace session.");
   }
 
   function revokeInvitation(id: string) {
@@ -439,6 +478,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   function resetDemoData() {
     window.localStorage.removeItem(storageKey);
+    setOrganizationSettings(seededOrganizationSettings);
     setApplications(seedApplications);
     setAuditEvents(seedAudit);
     setTeams(seedTeams);
@@ -453,10 +493,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setIncidents(seedIncidents);
     setServers(seedServers);
     setStackDeployments(seedStackDeployments);
-    showToast("Demo data reset.");
+    showToast("Local workspace state reset.");
   }
 
-  const value = useMemo(() => ({ applications, auditEvents, teams, teamMembers, invitations, accessState, modelCatalog, knowledgeBases, governedAgents, routingPolicies, agentApprovals, incidents, servers, stackTemplates, stackDeployments, isHydrated, toast, createApplication, publishApplication, redeployApplication, disableApplication, resetDemoData, recordAudit, simulateAction, acknowledgeIncident, mitigateIncident, resolveIncident, addServer, restartServerAgent, deployStack, saveAccessState, openAccessManager, closeAccessManager, accessDrawer, inviteMember, revokeInvitation, updateTeamBudget, updateUserLimit, addModel, refreshProviderHealth, addKnowledgeBase, updateAgent, createAgent, decideAgentApproval, createRoutingPolicy, updateRoutingPolicy }), [applications, auditEvents, teams, teamMembers, invitations, accessState, modelCatalog, knowledgeBases, governedAgents, routingPolicies, agentApprovals, incidents, servers, stackTemplates, stackDeployments, isHydrated, toast, accessDrawer]);
+  const value = useMemo(() => ({ organizationSettings, applications, auditEvents, teams, teamMembers, invitations, accessState, modelCatalog, knowledgeBases, governedAgents, routingPolicies, agentApprovals, incidents, servers, stackTemplates, stackDeployments, isHydrated, toast, createApplication, saveOrganizationSettings, testNotificationIntegration, publishApplication, redeployApplication, disableApplication, resetDemoData, recordAudit, simulateAction, acknowledgeIncident, mitigateIncident, resolveIncident, addServer, restartServerAgent, deployStack, saveAccessState, openAccessManager, closeAccessManager, accessDrawer, inviteMember, revokeInvitation, updateTeamBudget, updateUserLimit, addModel, refreshProviderHealth, addKnowledgeBase, updateAgent, createAgent, decideAgentApproval, createRoutingPolicy, updateRoutingPolicy }), [organizationSettings, applications, auditEvents, teams, teamMembers, invitations, accessState, modelCatalog, knowledgeBases, governedAgents, routingPolicies, agentApprovals, incidents, servers, stackTemplates, stackDeployments, isHydrated, toast, accessDrawer]);
 
   return (
     <AppContext.Provider value={value}>
