@@ -174,6 +174,101 @@ tr:hover td { background: rgba(238,241,246,.55); }
 .selector-list { display: grid; gap: 8px; }
 .selector-item { width: 100%; min-height: 42px; border: 1px solid var(--border-subtle); border-radius: 8px; background: white; padding: 0 12px; text-align: left; font-weight: 600; color: var(--text-primary); }
 .selector-item.active { border-color: rgba(91,61,255,.45); background: rgba(91,61,255,.07); color: var(--brand-primary); }
+.team-workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  margin-top: 18px;
+  overflow: hidden;
+}
+.team-list-panel {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 18px;
+  border-right: 1px solid var(--border-subtle);
+  background: #fbfcfe;
+}
+.team-panel-heading h3 { margin: 0 0 4px; font-size: 16px; }
+.team-list {
+  display: grid;
+  gap: 8px;
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.team-list-item {
+  width: 100%;
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: #fff;
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--text-primary);
+}
+.team-list-item:hover, .team-list-item.active {
+  border-color: rgba(91,61,255,.45);
+  background: rgba(91,61,255,.06);
+}
+.team-list-item strong { display: block; }
+.team-list-item small { display: block; margin-top: 3px; color: var(--text-secondary); }
+.team-detail-panel { padding: 18px 20px; }
+.team-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.team-detail-header h3 { margin: 0 0 4px; font-size: 20px; }
+.team-summary {
+  margin: 12px 0 14px;
+  max-width: 980px;
+  color: var(--text-primary);
+}
+.team-tabs { margin-bottom: 14px; }
+.team-overview-list {
+  display: grid;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+.team-overview-list > div {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 18px;
+  min-height: 50px;
+  align-items: center;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+.team-overview-list > div:first-child { border-top: 0; }
+.team-overview-list p { margin: 0; }
+.team-access-list {
+  display: grid;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+.team-access-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 74px;
+  padding: 13px 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+.team-access-item:first-child { border-top: 0; }
+.team-access-item h3 { margin: 0 0 4px; font-size: 14px; }
+.team-access-item p { margin: 0; color: var(--text-secondary); }
 .control-list { display: grid; gap: 10px; }
 .control-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 48px; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 10px 12px; background: white; }
 .control-row strong { display: block; }
@@ -587,6 +682,9 @@ tr:hover td { background: rgba(238,241,246,.55); }
   .access-ribbon, .drawer-header, .drawer-footer, .drawer-controls { align-items: flex-start; flex-direction: column; }
   .access-drawer { width: 100vw; }
   .access-row, .access-summary-grid { grid-template-columns: 1fr; }
+  .team-workspace { grid-template-columns: 1fr; }
+  .team-list-panel { border-right: 0; border-bottom: 1px solid var(--border-subtle); }
+  .team-list { max-height: none; }
   .knowledge-layout { grid-template-columns: 1fr; }
   .knowledge-source-panel { position: static; }
   .source-card-list { max-height: none; }
@@ -887,6 +985,9 @@ summary:focus-visible {
   .settings-shell { grid-template-columns: 1fr; }
   .settings-tabs { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sticky-save-bar, .sidebar-collapsed .sticky-save-bar { left: 12px; right: 12px; bottom: 12px; }
+  .team-overview-list > div { grid-template-columns: 1fr; gap: 4px; }
+  .team-access-item { grid-template-columns: 1fr; align-items: start; }
+  .team-access-item .button { width: max-content; }
   .knowledge-access-row { grid-template-columns: 1fr; align-items: start; }
   .knowledge-access-row .switch-button { width: max-content; }
 }
